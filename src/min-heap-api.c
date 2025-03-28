@@ -1,154 +1,194 @@
-/*!
- * \file min-heap.c
- * \date 2025-03-28
- * \authors Antonio Gelain [antonio.gelain2@gmail.com]
- * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
- * 
- * \brief Library that implements a minimum heap with an arena allocator
- * \details TODO
- * 
- * \warning TODO
+/**
+ * @file min-heap.c
+ * @brief Library that implements a minimum heap with a static array without
+ * dinamic memory allocation
+ *
+ * @date 29 Feb 2024
+ * @author Antonio Gelain [antonio.gelain@studenti.unitn.it]
  */
 
- #include "min-heap.h"
  #include "min-heap-api.h"
- 
+
  #include <string.h>
- #include <stdio.h>
  
- /*!
-  * \brief Macros to get the parent and children indices given the current item index
+ /**
+  * @brief Macros to get the parent and children indices given the current item index
   *
-  * \param I The current item index
-  * \param B The size of the item in bytes
-  * \return The parent, left child or right child respectively
+  * @param I The current item index
+  * @param B The size of the item in bytes
+  * @return The parent, left child or right child respectively
   */
  #define MIN_HEAP_PARENT(I) ((I - 1) / 2)
  #define MIN_HEAP_CHILD_L(I) ((I) * 2 + 1)
  #define MIN_HEAP_CHILD_R(I) ((I) * 2 + 2)
  
- static inline void min_heap_swap(MinHeapHandler_t *heap, size_t a, size_t b) {
-     void *temp = heap->arenaAllocator.items[a].value;
-     heap->arenaAllocator.items[a].value = heap->arenaAllocator.items[b].value;
-     heap->arenaAllocator.items[b].value = temp;
+ static inline void _min_heap_swap(MinHeapInterface * heap, void * a, void * b) {
+     uint8_t * aux = (uint8_t *)&heap->data + heap->capacity * heap->data_size;
+     memcpy(aux, a, heap->data_size);
+     memcpy(a, b, heap->data_size);
+     memcpy(b, aux, heap->data_size);
  }
  
- MinHeapReturnCode min_heap_init(MinHeapHandler_t *heap, size_t max_capacity, int8_t (*compare)(void *, void *)) {
-     if (!heap || !compare) return MIN_HEAP_NULL_POINTER;
-     heap->capacity = max_capacity;
-     heap->compare = compare;
-     arena_allocator_api_init(&heap->arenaAllocator);
+MinHeapReturnCode _min_heap_init(
+    MinHeapInterface * heap,
+    size_t data_size,
+    size_t capacity,
+    int8_t (* compare)(void *, void *),
+    ArenaAllocatorHandler_t *arena  
+    )
+ {
+    if (heap == NULL || compare == NULL || arena == NULL)
+        return MIN_HEAP_NULL_POINTER;
+    heap->data_size = data_size;
+    heap->size = 0;
+    heap->capacity = capacity;
+    heap->compare = compare;
+    heap->data = arena_allocator_api_calloc(arena, sizeof(void *), capacity);
      return MIN_HEAP_OK;
  }
  
- size_t min_heap_size(MinHeapHandler_t *heap) {
-     return heap ? heap->arenaAllocator.size : 0;
+ size_t _min_heap_size(MinHeapInterface * heap) {
+     return heap == NULL ? 0U : heap->size;
  }
  
- bool min_heap_is_empty(MinHeapHandler_t *heap) {
-     return min_heap_size(heap) == 0;
+ bool _min_heap_is_empty(MinHeapInterface * heap) {
+     return heap == NULL ? true : heap->size == 0;
  }
  
- bool min_heap_is_full(MinHeapHandler_t *heap) {
-     return min_heap_size(heap) >= heap->capacity;
+ bool _min_heap_is_full(MinHeapInterface * heap) {
+     return heap == NULL ? true : heap->size >= heap->capacity;
  }
  
- MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item) {
-    if (!heap || !heap->compare || !item) return MIN_HEAP_NULL_POINTER;
-    if (min_heap_is_full(heap)) return MIN_HEAP_FULL;
-    
-    size_t index = heap->arenaAllocator.size;
-    void *data = arena_allocator_api_alloc(&heap->arenaAllocator, sizeof(void *));
-    if (!data) return MIN_HEAP_NULL_POINTER;
-
-    // Store the item memory address in the allocated space
-    memcpy(data, item, sizeof(void *));
-    while (index > 0) {
-        size_t parent = MIN_HEAP_PARENT(index);
-        if (heap->compare(heap->arenaAllocator.items[parent].value, 
-            heap->arenaAllocator.items[index].value) <= 0) break;
-        min_heap_swap(heap, parent, index);
-        index = parent;
-    }
-    return MIN_HEAP_OK;
+ MinHeapReturnCode _min_heap_top(MinHeapInterface * heap, void * out) {
+     if (heap == NULL || out == NULL)
+         return MIN_HEAP_NULL_POINTER;
+     if (heap->size == 0)
+         return MIN_HEAP_EMPTY;
+     memcpy(out, &heap->data, heap->data_size);
+     return MIN_HEAP_OK;
  }
  
- MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out) {
-    if (!heap || !out) return MIN_HEAP_NULL_POINTER;
-    if (min_heap_is_empty(heap)) return MIN_HEAP_EMPTY;
-    memcpy(out, heap->arenaAllocator.items[0].value, sizeof(void *));
-    return MIN_HEAP_OK;
+ void * _min_heap_peek(MinHeapInterface * heap) {
+     if (heap == NULL || heap->size == 0)
+         return NULL;
+     return &heap->data;
  }
  
- void *min_heap_peek(MinHeapHandler_t *heap) {
-     return min_heap_is_empty(heap) ? NULL : heap->arenaAllocator.items[0].value;
+ MinHeapReturnCode _min_heap_clear(MinHeapInterface * heap) {
+     if (heap == NULL)
+         return MIN_HEAP_NULL_POINTER;
+     heap->size = 0;
+     return MIN_HEAP_OK;
  }
  
- MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *out) {
-    if (!heap || !heap->compare) return MIN_HEAP_NULL_POINTER;  // Check for null pointers
-    if (min_heap_is_empty(heap)) return MIN_HEAP_EMPTY;  // Ensure the heap is not empty
-    if (index >= min_heap_size(heap)) return MIN_HEAP_OUT_OF_BOUNDS;  // Validate the index
-
-    // If requested, output the value of the removed item
-    if (out) {
-        memcpy(out, heap->arenaAllocator.items[index].value, sizeof(void *));
-    }
-
-    min_heap_swap(heap, index, heap->arenaAllocator.size - 1);
-    //heap->arenaAllocator.items[index].value = heap->arenaAllocator.items[heap->arenaAllocator.size - 1].value;
-
-    --heap->arenaAllocator.size;//as the last element is to be ignored
-
-     // Restore the heap property by "bubbling down" the swapped element
-     while (true) {
-        size_t left = MIN_HEAP_CHILD_L(index);
-        size_t right = MIN_HEAP_CHILD_R(index);
-        size_t smallest = index;
-
-        // Check if the left child exists and is smaller than the current node
-        if (left < min_heap_size(heap) && heap->compare(heap->arenaAllocator.items[left].value, heap->arenaAllocator.items[smallest].value) < 0)
-            smallest = left;
-
-        // Check if the right child exists and is smaller than the current node
-        if (right < min_heap_size(heap) && heap->compare(heap->arenaAllocator.items[right].value, heap->arenaAllocator.items[smallest].value) < 0)
-            smallest = right;
-
-        if (smallest != index){
-            min_heap_swap(heap, index, smallest);
-            index = smallest;
-        }
-        else 
-            break;
-    }
+ MinHeapReturnCode _min_heap_insert(MinHeapInterface * heap, void * item) {
+     if (heap == NULL || item == NULL || heap->compare == NULL)
+         return MIN_HEAP_NULL_POINTER;
+     if (heap->size == heap->capacity)
+         return MIN_HEAP_FULL;
  
-    return MIN_HEAP_OK;  // Return success
+     // Insert item at the end of the heap
+     const size_t data_size = heap->data_size;
+     size_t cur = heap->size;
+     uint8_t * base = (uint8_t *)&heap->data;
+     memcpy(base + cur * data_size, item, data_size);
+     ++heap->size;
+ 
+     // Restore heap properties
+     size_t parent = MIN_HEAP_PARENT(cur);
+     while(cur != 0 && heap->compare(base + cur * data_size, base + parent * data_size) < 0) {
+         // Swap items
+         _min_heap_swap(heap, base + cur * data_size, base + parent * data_size);
+ 
+         // Update indices
+         cur = parent;
+         parent = MIN_HEAP_PARENT(cur);
+     }
+     return MIN_HEAP_OK;
  }
  
-MinHeapReturnCode min_heap_clear(MinHeapHandler_t *heap) {
-    if (!heap) return MIN_HEAP_NULL_POINTER;
-    arena_allocator_api_free(&heap->arenaAllocator);
-    return MIN_HEAP_OK;
-}
-
-signed_size_t min_heap_find(MinHeapHandler_t *heap, void *item) {
-    if (!heap || !item || !heap->compare) return -1;
-    if (heap->arenaAllocator.size == 0) return -1;
-    
-    for (size_t index = 0; index < heap->arenaAllocator.size; index++) {
-        if (!heap->arenaAllocator.items) {
-            return -1;
-        }
-        if (!heap->arenaAllocator.items[index].value) {
-            continue;
-        }
-        
-        void * stored_value = heap->arenaAllocator.items[index].value;
-        //printf("Checking index %ld: %d\n", index, stored_value);
-
-        if (heap->compare(stored_value, item) == 0) {
-            return index;
-        }
-    }
-
-    return -1;
-}
+ MinHeapReturnCode _min_heap_remove(MinHeapInterface * heap, size_t index, void * out) {
+     if (heap == NULL || heap->compare == NULL)
+         return MIN_HEAP_NULL_POINTER;
+     if (heap->size == 0)
+         return MIN_HEAP_EMPTY;
+     if (index >= heap->size)
+         return MIN_HEAP_OUT_OF_BOUNDS;
+ 
+     // Swap the error with the last one in the heap (if not the same)
+     uint8_t * base = (uint8_t *)&heap->data;
+     const size_t data_size = heap->data_size;
+     if (heap->size > 1)
+         _min_heap_swap(heap, base + index * data_size, base + (heap->size - 1) * data_size);
+ 
+     // Remove last element
+     --heap->size;
+ 
+     // Copy element
+     if (out != NULL)
+         memcpy(out, base + heap->size * data_size, data_size);
+ 
+     if (index == heap->size)
+         return MIN_HEAP_OK;
+ 
+     // Restore heap properties
+     int8_t cmp = heap->compare(base + index * data_size, base + heap->size * data_size);
+     // Up-heapify
+     if (cmp < 0) {
+         size_t parent = MIN_HEAP_PARENT(index);
+         while(index != 0 && heap->compare(base + index * data_size, base + parent * data_size) < 0) {
+             // Swap items
+             _min_heap_swap(heap, base + index * data_size, base + parent * data_size);
+ 
+             // Update indices
+             index = parent;
+             parent = MIN_HEAP_PARENT(index);
+         }
+     }
+     // Down-heapify
+     else if (cmp > 0) {
+         // Restore heap properties
+         size_t l = MIN_HEAP_CHILD_L(index);
+         size_t r = MIN_HEAP_CHILD_R(index);
+         size_t child = (r >= heap->size)
+             ? l
+             : (heap->compare(base + l * data_size, base + r * data_size) < 0
+                 ? l
+                 : r
+             );
+ 
+         // Until a leaf is reached (or the parent has only the left child)
+         while (r < heap->size && heap->compare(base + child * data_size, base + index * data_size) < 0) {
+             _min_heap_swap(heap, base + index * data_size, base + child * data_size);
+ 
+             // Update indices
+             index = child;
+             l = MIN_HEAP_CHILD_L(index);
+             r = MIN_HEAP_CHILD_R(index);
+             child = (r >= heap->size)
+                 ? l
+                 : (heap->compare(base + l * data_size, base + r * data_size) < 0
+                     ? l
+                     : r
+                 );
+         }
+ 
+         // Check left child
+         if (l < heap->size && heap->compare(base + l * data_size, base + index * data_size) < 0)
+             _min_heap_swap(heap, base + index * data_size, base + child * data_size);
+     }
+     return MIN_HEAP_OK;
+ }
+ 
+ signed_size_t _min_heap_find(MinHeapInterface * heap, void * item) {
+     if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0)
+         return -1;
+ 
+     for (size_t i = 0; i < heap->size; ++i) {
+         if (heap->compare(item, (uint8_t *)&heap->data + i * heap->data_size) == 0)
+             return i;
+     }
+     return -1;
+ }
+ 
+ 

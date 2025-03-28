@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
   "name": "Min-heap",
   "version": "1.0.0",
-  "description": "This library implements all the functions used to create and manage a minimum heap data structure using an arena allocator.",
+  "description": "This library implements all the functions used to create and manage a minimum heap data structure.",
   "keywords": [
     "min-heap",
     "heap",
@@ -14,7 +14,7 @@
   },
   "dependencies": [
     {
-      "name": "external-repo",
+      "name": "ArenaAllocator",
       "version": "https://github.com/eagletrt/libarena-allocator-sw.git"
     }
   ],
@@ -38,7 +38,14 @@
     "min-heap-api.h"
   ],
   "examples": [
-
+    {
+      "name": "Simple Min Heap Implementation",
+      "src": ["examples/min-heap-basic.c"]
+    },
+    {
+      "name": "Simple Min Heap Implementation with Error Handling",
+      "src": ["examples/min-heap-error-handling.c"]
+    }
   ],
   "export": {
     "include": [
