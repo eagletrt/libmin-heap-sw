@@ -1,27 +1,45 @@
 {
   "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
-  "name": "LibraryTemplate",
+  "name": "Min-heap",
   "version": "1.0.0",
-  "description": "Templates for libraries compatible with the PlatformIO ecosystem",
+  "description": "This library implements all the functions used to create and manage a minimum heap data structure using an arena allocator.",
   "keywords": [
-    "template"
+    "min-heap",
+    "heap",
+    "embedded"
   ],
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/eagletrt/libmin-heap-sw"
   },
+  "dependencies": [
+    {
+      "name": "external-repo",
+      "version": "https://github.com/eagletrt/libarena-allocator-sw.git"
+    }
+  ],
   "authors": [
     {
       "name": "Antonio Gelain",
       "email": "antonio.gelain2@gmail.com",
+      "maintainer": true
+    },
+    {
+      "name": "Dorijan Di Zepp",
+      "email": "dorijan.dizepp@gmail.com",
       "maintainer": true
     }
   ],
   "license": "AGPL-3.0-only",
   "frameworks": "*",
   "platforms": "*",
-  "headers": [],
-  "examples": [],
+  "headers": [
+    "min-heap.h",
+    "min-heap-api.h"
+  ],
+  "examples": [
+
+  ],
   "export": {
     "include": [
       "src/**",
