@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
-  "name": "Min-heap",
+  "name": "MinHeap",
   "version": "1.0.0",
   "description": "This library implements all the functions used to create and manage a minimum heap data structure. Can be used for any embedded system.",
   "keywords": [
