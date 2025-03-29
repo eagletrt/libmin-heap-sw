@@ -4,8 +4,8 @@
  * \authors Antonio Gelain [antonio.gelain@studenti.unitn.it]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
- * \brief Library that implements a minimum heap with a static array without
- *      dinamic memory allocation
+ * \brief Library that implements a minimum heap with an arena allocator to
+ *      dynamically allocate the buffer
  * 
  * \details A min heap is a binary heap where the smallest element is 
  *      always at the root. It maintains the heap property, meaning each 
@@ -18,14 +18,14 @@
  *      by using the arena allocator.
  */
 
- #ifndef MIN_HEAP_H
- #define MIN_HEAP_H
- 
- #include <stdint.h>
- #include <stddef.h>
- #include <stdbool.h>
- 
- /*!
+#ifndef MIN_HEAP_H
+#define MIN_HEAP_H
+
+#include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+/*!
    * \brief Type definition for the min heap structure
    * \details As an example you can declare and initialize a new heap structure
    * that can contain 10 integers as follows:
@@ -50,16 +50,16 @@
    *     -  0: if the items are equal
    *     -  1: if the first item is greater than the second
    */
- #define MinHeap(TYPE, CAPACITY)            \
-     struct {                               \
-         size_t data_size;                \
-         size_t size;                       \
-         size_t capacity;                   \
-         int8_t (*compare)(void *, void *); \
-         TYPE *data;           \
-     }
- 
- /*!
+#define MinHeap(TYPE, CAPACITY)            \
+    struct {                               \
+        size_t data_size;                  \
+        size_t size;                       \
+        size_t capacity;                   \
+        int8_t (*compare)(void *, void *); \
+        TYPE *data;                        \
+    }
+
+/*!
    * \brief Min heap structure initialization
    * \attention The TYPE and CAPACITY variables must be the same as the ones
    * in the structure declaration above
@@ -78,38 +78,38 @@
    * \param CAPACITY The maximum number of elements of the heap
    * \param CMP_CALLBACK The callback function used to compare items in the heap
    */
- #define min_heap_new(TYPE, CAPACITY, CMP_CALLBACK) \
-     {                                              \
-         .data_size = sizeof(TYPE),                 \
-         .size = 0,                                 \
-         .capacity = CAPACITY,                      \
-         .compare = CMP_CALLBACK,                   \
-         .data = NULL                             \
-     }
- 
- /*!
+#define min_heap_new(TYPE, CAPACITY, CMP_CALLBACK) \
+    {                                              \
+        .data_size = sizeof(TYPE),                 \
+        .size = 0,                                 \
+        .capacity = CAPACITY,                      \
+        .compare = CMP_CALLBACK,                   \
+        .data = NULL                               \
+    }
+
+/*!
    * \brief Structure definition used to pass the heap handler as a function parameter
    * \attention This structure should not be used directly
    */
- typedef struct {
-     size_t data_size;
-     size_t size;
-     size_t capacity;
-     int8_t (*compare)(void *, void *);
-     void *data;
- } MinHeapInterface;
- 
- /*!
+typedef struct {
+    size_t data_size;
+    size_t size;
+    size_t capacity;
+    int8_t (*compare)(void *, void *);
+    void *data;
+} MinHeapInterface;
+
+/*!
    * \brief Enum with all the possible return codes for the min heap functions
    */
- typedef enum {
-     MIN_HEAP_OK,
-     MIN_HEAP_NULL_POINTER,
-     MIN_HEAP_EMPTY,
-     MIN_HEAP_FULL,
-     MIN_HEAP_OUT_OF_BOUNDS
- } MinHeapReturnCode;
- 
- typedef long signed_size_t;
- 
- #endif
+typedef enum {
+    MIN_HEAP_OK,
+    MIN_HEAP_NULL_POINTER,
+    MIN_HEAP_EMPTY,
+    MIN_HEAP_FULL,
+    MIN_HEAP_OUT_OF_BOUNDS
+} MinHeapReturnCode;
+
+typedef long signed_size_t;
+
+#endif

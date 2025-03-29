@@ -1,7 +1,7 @@
 # MIN-HEAP
 
 This library implements all the functions used to create and manage a [minimum heap](https://it.wikipedia.org/wiki/Heap_(struttura_dati))
-data structure using a static array without dynamic memory allocation.
+data structure using a static array with dynamic memory allocation.
 
 > [!IMPORTANT]
 > This library does not guarantee that the functions will be executed correctly
@@ -25,6 +25,7 @@ This library implements:
 > which implies linear time complexity (i.e. *no bueno*)
 
 ## Dependencies
+
 This library uses [ArenaAllocator](https://github.com/eagletrt/libarena-allocator-sw.git) for memory management. Make sure to initialize ArenaAllocatorHandler_t to use prev_errors array, as shown in the following section.
 
 ## Usage
@@ -41,18 +42,22 @@ MinHeap(struct Point, 2000) point_heap = ...;
 Then initialize the heap using the `min_heap_new` macro that requires the same item type
 and capacity given in the declaration as well as a pointer to a function that should compare
 two items of the heap.<br/>
-An arena allocator, which must be initialized, will be needed to allocate the buffer required for storing the heap's data.
+The macro doesn not allocate memory for the data buffer, meaning that the use of an arena allocator for initializzation is required.
 
 ```c
 ArenaAllocatorHandler_t arena;
 arena_allocator_api_init(&arena);
-... = min_heap_new(int, 10, int_compare, &arena);
-... = min_heap_new(double, 7, double_compare, &arena);
-... = min_heap_new(struct Point, 2000, point_compare, &arena);
+... = min_heap_new(int, 10, int_compare);
+... = min_heap_new(double, 7, double_compare);
+... = min_heap_new(struct Point, 2000, point_compare);
+
+<heap>.data = arena_allocator_api_calloc(&arena, data_size, capacity);
 ```
 
-The `min_heap_init` function can also be used to initialize the heap structure as follows:
+The following function can also be used to initialize the heap. An initialized arena allocator is required to allocate memory for storing the buffer's data.
 ```c
+ArenaAllocatorHandler_t arena;
+arena_allocator_api_init(&arena);
 min_heap_init(&int_heap, int, 10, int_compare, &arena);
 min_heap_init(&double_heap, double, 7, double_compare, &arena);
 min_heap_init(&point_heap, struct Point, 2000, point_compare, &arena);
