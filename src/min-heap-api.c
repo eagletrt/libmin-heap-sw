@@ -194,7 +194,7 @@ signed_size_t _min_heap_find(MinHeapInterface *heap, void *item) {
         return -1;
 
     for (size_t i = 0; i < heap->size; ++i) {
-        if (heap->compare(item, heap->data + heap->data_size * i) == 0)
+        if (heap->compare(item, (uint8_t *)heap->data + heap->data_size * i) == 0)
             return i;
     }
 
