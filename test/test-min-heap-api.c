@@ -369,44 +369,44 @@ int main() {
     UNITY_BEGIN();
 
     /*!
- * \defgroup Testing Initialization of Heap
- * @{
- */
+    * \defgroup Testing Initialization of Heap
+    * @{
+    */
     RUN_TEST(check_min_heap_init_with_null_handler);
     RUN_TEST(check_min_heap_init_with_null_callback);
     RUN_TEST(check_min_heap_init);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Size Functions
- * @{
- */
+    * \defgroup Testing Heap Size Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_size_empty);
     RUN_TEST(check_min_heap_size_not_empty);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Emptiness Functions
- * @{
- */
+    * \defgroup Testing Heap Emptiness Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_empty_with_null);
     RUN_TEST(check_min_heap_empty_when_empty);
     RUN_TEST(check_min_heap_empty_when_not_empty);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Fullness Functions
- * @{
- */
+    * \defgroup Testing Heap Fullness Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_full_with_null);
     RUN_TEST(check_min_heap_full_when_full);
     RUN_TEST(check_min_heap_full_when_not_full);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Top Functions
- * @{
- */
+    * \defgroup Testing Heap Top Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_top_with_null_heap);
     RUN_TEST(check_min_heap_top_with_null_item);
     RUN_TEST(check_min_heap_top_when_empty);
@@ -415,27 +415,27 @@ int main() {
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Peek Functions
- * @{
- */
+    * \defgroup Testing Heap Peek Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_peek_with_null);
     RUN_TEST(check_min_heap_peek_when_empty);
     RUN_TEST(check_min_heap_peek_when_not_empty);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Clear Functions
- * @{
- */
+    * \defgroup Testing Heap Clear Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_clear_with_null);
     RUN_TEST(check_min_heap_clear_return_value);
     RUN_TEST(check_min_heap_clear_size);
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Insert Functions
- * @{
- */
+    * \defgroup Testing Heap Insert Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_insert_with_null_handler);
     RUN_TEST(check_min_heap_insert_with_null_compare);
     RUN_TEST(check_min_heap_insert_with_null_item);
@@ -447,9 +447,9 @@ int main() {
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Remove Functions
- * @{
- */
+    * \defgroup Testing Heap Remove Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_remove_with_null_handler);
     RUN_TEST(check_min_heap_remove_with_null_compare);
     RUN_TEST(check_min_heap_remove_when_empty);
@@ -464,9 +464,9 @@ int main() {
     /*!@} */
 
     /*!
- * \defgroup Testing Heap Find Functions
- * @{
- */
+    * \defgroup Testing Heap Find Functions
+    * @{
+    */
     RUN_TEST(check_min_heap_find_with_null_heap);
     RUN_TEST(check_min_heap_find_with_null_item);
     RUN_TEST(check_min_heap_find_when_empty);

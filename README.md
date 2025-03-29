@@ -30,37 +30,25 @@ This library uses [ArenaAllocator](https://github.com/eagletrt/libarena-allocato
 
 ## Usage
 
-To create a min heap first declare a variable using the `MinHeap` macro
-by providing the item type and the maximum number of element of the heap. \
+To create a min heap, first declare a variable using `MinHeapHandler_t`. In order to initialize it, an arena allocator is needed.\
 For example:
 ```c
-MinHeap(int, 10) int_heap = ...;
-MinHeap(double, 7) double_heap = ...;
-MinHeap(struct Point, 2000) point_heap = ...;
+MinHeapHandler_t int_heap;
+MinHeapHandler_t point_heap;
+ArenaAllocatorHandler_t arena;
+
+arena_allocator_api_init(&arena);
+min_heap_init(&int_heap, sizeof(int), 20, min_heap_compare_int, &arena);
+min_heap_init(&point_heap, sizeof(struct), 13, min_heap_compare_point, &arena);
 ```
 
-Then initialize the heap using the `min_heap_new` macro that requires the same item type
-and capacity given in the declaration as well as a pointer to a function that should compare
-two items of the heap.<br/>
-The macro doesn not allocate memory for the data buffer, meaning that the use of an arena allocator for initializzation is required.
+To remove any trace of the buffer, the solely `min_heap_clear` function is not sufficient as it doesn't deallocate the data buffer.
+To do so, `arena_allocator_api_free` will be used as follows:
 
 ```c
-ArenaAllocatorHandler_t arena;
-arena_allocator_api_init(&arena);
-... = min_heap_new(int, 10, int_compare);
-... = min_heap_new(double, 7, double_compare);
-... = min_heap_new(struct Point, 2000, point_compare);
-
-<heap>.data = arena_allocator_api_calloc(&arena, data_size, capacity);
-```
-
-The following function can also be used to initialize the heap. An initialized arena allocator is required to allocate memory for storing the buffer's data.
-```c
-ArenaAllocatorHandler_t arena;
-arena_allocator_api_init(&arena);
-min_heap_init(&int_heap, int, 10, int_compare, &arena);
-min_heap_init(&double_heap, double, 7, double_compare, &arena);
-min_heap_init(&point_heap, struct Point, 2000, point_compare, &arena);
+min_heap_clear(&int_heap);
+min_heap_clear(&point_heap);
+arena_allocator_api_free(&arena);
 ```
 
 The compare function signature is as follows:

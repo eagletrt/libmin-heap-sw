@@ -26,9 +26,9 @@
 #include <stdbool.h>
 
 /*!
-    * \brief Structure definition used to pass the heap handler as a function parameter
-    * \attention This structure should not be used directly
-    */
+* \brief Structure definition used to pass the heap handler as a function parameter
+* \attention This structure should not be used directly
+*/
 typedef struct {
     size_t data_size;
     size_t size;
@@ -38,8 +38,8 @@ typedef struct {
 } MinHeapHandler_t;
 
 /*!
-    * \brief Enum with all the possible return codes for the min heap functions
-    */
+* \brief Enum with all the possible return codes for the min heap functions
+*/
 typedef enum {
     MIN_HEAP_OK,
     MIN_HEAP_NULL_POINTER,
