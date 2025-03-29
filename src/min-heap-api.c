@@ -23,18 +23,18 @@
 #include <string.h>
 
 /*!
-    * \brief Macros to get the parent and children indices given the current item index
-    *
-    * \param I The current item index
-    * \param B The size of the item in bytes
-    * \return The parent, left child or right child respectively
-    */
+* \brief Macros to get the parent and children indices given the current item index
+*
+* \param I The current item index
+* \param B The size of the item in bytes
+* \return The parent, left child or right child respectively
+*/
 #define MIN_HEAP_PARENT(I) ((I - 1) / 2)
 #define MIN_HEAP_CHILD_L(I) ((I) * 2 + 1)
 #define MIN_HEAP_CHILD_R(I) ((I) * 2 + 2)
 
 static inline void min_heap_swap(MinHeapHandler_t *heap, void *a, void *b) {
-    uint8_t *aux = (uint8_t *)heap->data + heap->capacity * heap->data_size;
+    uint8_t aux[heap->data_size];//local buffer to avoid invalid memory access
     memcpy(aux, a, heap->data_size);
     memcpy(a, b, heap->data_size);
     memcpy(b, aux, heap->data_size);
