@@ -31,7 +31,7 @@ int8_t min_heap_compare_int(void *a, void *b) {
 
 int main(void) {
     srand(time(NULL));
-    MinHeap(int, 10) int_heap;
+    MinHeapHandler_t int_heap;
     ArenaAllocatorHandler_t arena;
 
     /**
@@ -39,13 +39,13 @@ int main(void) {
      * min heap buffer.
      */
     arena_allocator_api_init(&arena);
-    min_heap_init(&int_heap, int, 10, min_heap_compare_int, &arena);
+    min_heap_init(&int_heap, sizeof(int), 20, min_heap_compare_int, &arena);
 
     /**
      * Checking if it is not possible to insert any new 
      * value when the heap is full.
      */
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < 22; ++i) {
         int num = rand() % 100 + 1;
         if (min_heap_insert(&int_heap, &num) != MIN_HEAP_OK)
             printf("[ERROR]: Cannot insert element in the heap\n");

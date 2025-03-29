@@ -22,26 +22,26 @@
 
 #include <string.h>
 
-/**
-   * @brief Macros to get the parent and children indices given the current item index
-   *
-   * @param I The current item index
-   * @param B The size of the item in bytes
-   * @return The parent, left child or right child respectively
-   */
+/*!
+    * \brief Macros to get the parent and children indices given the current item index
+    *
+    * \param I The current item index
+    * \param B The size of the item in bytes
+    * \return The parent, left child or right child respectively
+    */
 #define MIN_HEAP_PARENT(I) ((I - 1) / 2)
 #define MIN_HEAP_CHILD_L(I) ((I) * 2 + 1)
 #define MIN_HEAP_CHILD_R(I) ((I) * 2 + 2)
 
-static inline void _min_heap_swap(MinHeapInterface *heap, void *a, void *b) {
+static inline void min_heap_swap(MinHeapHandler_t *heap, void *a, void *b) {
     uint8_t *aux = (uint8_t *)heap->data + heap->capacity * heap->data_size;
     memcpy(aux, a, heap->data_size);
     memcpy(a, b, heap->data_size);
     memcpy(b, aux, heap->data_size);
 }
 
-MinHeapReturnCode _min_heap_init(
-    MinHeapInterface *heap,
+MinHeapReturnCode min_heap_init(
+    MinHeapHandler_t *heap,
     size_t data_size,
     size_t capacity,
     int8_t (*compare)(void *, void *),
@@ -58,19 +58,19 @@ MinHeapReturnCode _min_heap_init(
     return MIN_HEAP_OK;
 }
 
-size_t _min_heap_size(MinHeapInterface *heap) {
+size_t min_heap_size(MinHeapHandler_t *heap) {
     return heap == NULL ? 0U : heap->size;
 }
 
-bool _min_heap_is_empty(MinHeapInterface *heap) {
+bool min_heap_is_empty(MinHeapHandler_t *heap) {
     return heap == NULL ? true : heap->size == 0;
 }
 
-bool _min_heap_is_full(MinHeapInterface *heap) {
+bool min_heap_is_full(MinHeapHandler_t *heap) {
     return heap == NULL ? true : heap->size >= heap->capacity;
 }
 
-MinHeapReturnCode _min_heap_top(MinHeapInterface *heap, void *out) {
+MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out) {
     if (heap == NULL || out == NULL || heap->data == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == 0)
@@ -79,20 +79,20 @@ MinHeapReturnCode _min_heap_top(MinHeapInterface *heap, void *out) {
     return MIN_HEAP_OK;
 }
 
-void *_min_heap_peek(MinHeapInterface *heap) {
+void *min_heap_peek(MinHeapHandler_t *heap) {
     if (heap == NULL || heap->size == 0)
         return NULL;
     return heap->data;
 }
 
-MinHeapReturnCode _min_heap_clear(MinHeapInterface *heap) {
+MinHeapReturnCode min_heap_clear(MinHeapHandler_t *heap) {
     if (heap == NULL)
         return MIN_HEAP_NULL_POINTER;
     heap->size = 0;
     return MIN_HEAP_OK;
 }
 
-MinHeapReturnCode _min_heap_insert(MinHeapInterface *heap, void *item) {
+MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->data == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == heap->capacity)
@@ -109,7 +109,7 @@ MinHeapReturnCode _min_heap_insert(MinHeapInterface *heap, void *item) {
     size_t parent = MIN_HEAP_PARENT(cur);
     while (cur != 0 && heap->compare(base + cur * data_size, base + parent * data_size) < 0) {
         // Swap items
-        _min_heap_swap(heap, base + cur * data_size, base + parent * data_size);
+        min_heap_swap(heap, base + cur * data_size, base + parent * data_size);
 
         // Update indices
         cur = parent;
@@ -118,7 +118,7 @@ MinHeapReturnCode _min_heap_insert(MinHeapInterface *heap, void *item) {
     return MIN_HEAP_OK;
 }
 
-MinHeapReturnCode _min_heap_remove(MinHeapInterface *heap, size_t index, void *out) {
+MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *out) {
     if (heap == NULL || heap->compare == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == 0)
@@ -130,7 +130,7 @@ MinHeapReturnCode _min_heap_remove(MinHeapInterface *heap, size_t index, void *o
     uint8_t *base = (uint8_t *)heap->data;
     const size_t data_size = heap->data_size;
     if (heap->size > 1)
-        _min_heap_swap(heap, base + index * data_size, base + (heap->size - 1) * data_size);
+        min_heap_swap(heap, base + index * data_size, base + (heap->size - 1) * data_size);
 
     // Remove last element
     --heap->size;
@@ -149,7 +149,7 @@ MinHeapReturnCode _min_heap_remove(MinHeapInterface *heap, size_t index, void *o
         size_t parent = MIN_HEAP_PARENT(index);
         while (index != 0 && heap->compare(base + index * data_size, base + parent * data_size) < 0) {
             // Swap items
-            _min_heap_swap(heap, base + index * data_size, base + parent * data_size);
+            min_heap_swap(heap, base + index * data_size, base + parent * data_size);
 
             // Update indices
             index = parent;
@@ -169,7 +169,7 @@ MinHeapReturnCode _min_heap_remove(MinHeapInterface *heap, size_t index, void *o
 
         // Until a leaf is reached (or the parent has only the left child)
         while (r < heap->size && heap->compare(base + child * data_size, base + index * data_size) < 0) {
-            _min_heap_swap(heap, base + index * data_size, base + child * data_size);
+            min_heap_swap(heap, base + index * data_size, base + child * data_size);
 
             // Update indices
             index = child;
@@ -184,12 +184,12 @@ MinHeapReturnCode _min_heap_remove(MinHeapInterface *heap, size_t index, void *o
 
         // Check left child
         if (l < heap->size && heap->compare(base + l * data_size, base + index * data_size) < 0)
-            _min_heap_swap(heap, base + index * data_size, base + child * data_size);
+            min_heap_swap(heap, base + index * data_size, base + child * data_size);
     }
     return MIN_HEAP_OK;
 }
 
-signed_size_t _min_heap_find(MinHeapInterface *heap, void *item) {
+signed_size_t min_heap_find(MinHeapHandler_t *heap, void *item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL)
         return -1;
 
