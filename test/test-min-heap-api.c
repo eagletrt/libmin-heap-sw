@@ -65,8 +65,17 @@ void tearDown(void) {
     arena_allocator_api_free(&arena);
 }
 
+/*!
+ * \defgroup min_heap_init Test heap min initialization
+ * @{
+ */
+
 void check_min_heap_init_with_null_handler(void) {
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_init(NULL, sizeof(float), 3, min_heap_compare_float, &arena));
+}
+void check_min_heap_init_with_null_arena(void) {
+    MinHeapHandler_t heap;
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_init(&heap, sizeof(float), 3, min_heap_compare_float, NULL));
 }
 void check_min_heap_init_with_null_callback(void) {
     MinHeapHandler_t heap;
@@ -77,6 +86,16 @@ void check_min_heap_init(void) {
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_init(&heap, sizeof(float), 3, min_heap_compare_float, &arena));
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_size Test min heap size function
+ * @{
+ */
+
+void check_min_heap_size_null(void) {
+    TEST_ASSERT_EQUAL_size_t(min_heap_size(NULL), 0U);
+}
 void check_min_heap_size_empty(void) {
     TEST_ASSERT_EQUAL_size_t(min_heap_size(&int_heap), 0U);
 }
@@ -85,6 +104,13 @@ void check_min_heap_size_not_empty(void) {
     int_heap.size = 3;
     TEST_ASSERT_EQUAL_size_t(min_heap_size(&int_heap), 3U);
 }
+
+/*! @} */
+
+/*!
+ * \defgroup min_heap_is_empty Test min heap empty function
+ * @{
+ */
 
 void check_min_heap_empty_with_null(void) {
     TEST_ASSERT_TRUE(min_heap_is_empty(NULL));
@@ -98,6 +124,12 @@ void check_min_heap_empty_when_not_empty(void) {
     TEST_ASSERT_FALSE(min_heap_is_empty(&int_heap));
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_full Test min heap fullness function
+ * @{
+ */
 void check_min_heap_full_with_null(void) {
     TEST_ASSERT_TRUE(min_heap_is_full(NULL));
 }
@@ -110,6 +142,19 @@ void check_min_heap_full_when_not_full(void) {
     TEST_ASSERT_FALSE(min_heap_is_full(&int_heap));
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_top Test min heap top function
+ * @{
+ */
+
+void check_min_heap_top_with_null_data_heap(void) {
+    MinHeapHandler_t heap;
+    heap.data = NULL;
+    int a;
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_top(&heap, &a));
+}
 void check_min_heap_top_with_null_heap(void) {
     int a;
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_top(NULL, &a));
@@ -137,6 +182,13 @@ void check_min_heap_top_when_not_empty_data(void) {
     TEST_ASSERT_EQUAL_INT(val, a);
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_peek Test min heap peek function
+ * @{
+ */
+
 void check_min_heap_peek_with_null(void) {
     TEST_ASSERT_NULL(min_heap_peek(NULL));
 }
@@ -153,6 +205,13 @@ void check_min_heap_peek_when_not_empty(void) {
     TEST_ASSERT_EQUAL_INT_MESSAGE(*item, val, "Value in the int_heap is differen from the input value");
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_clear Test mean heap clear function
+ * @{
+ */
+
 void check_min_heap_clear_with_null(void) {
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_clear(NULL));
 }
@@ -168,6 +227,13 @@ void check_min_heap_clear_size(void) {
     TEST_ASSERT_EQUAL_size_t(int_heap.size, 0U);
 }
 
+/*! @} */
+
+/*!
+ * \defgroup min_heap_insert Test min heap insert function
+ * @{
+ */
+
 void check_min_heap_insert_with_null_handler(void) {
     Point p = { .x = 5.4f, .y = 2.7f };
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_insert(NULL, &p));
@@ -179,6 +245,11 @@ void check_min_heap_insert_with_null_compare(void) {
 }
 void check_min_heap_insert_with_null_item(void) {
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_insert(&point_heap, NULL));
+}
+void check_min_heap_insert_with_null_data(void) {
+    point_heap.data = NULL;
+    Point p = { .x = 5.4f, .y = 2.7f };
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_insert(&point_heap, &p));
 }
 void check_min_heap_insert_when_full(void) {
     Point p = { .x = 5.4f, .y = 2.7f };
@@ -211,6 +282,25 @@ void check_min_heap_insert_middle_data(void) {
     TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((Point *)point_heap.data), sizeof(Point), "First item has different data");
     TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((Point *)point_heap.data) + 1, sizeof(Point), "Second item has different data");
 }
+void check_min_heap_insert_middle_data_in_order(void) {
+    // Insert at the top a point that is less then the next
+    Point p1 = { .x = 5.4f, .y = 2.7f };
+    Point p2 = { .x = 10.f, .y = 10.f };
+
+    point_heap.size = 1;
+    ((Point *)point_heap.data)[0] = p1;
+
+    min_heap_insert(&point_heap, &p2);
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((Point *)point_heap.data), sizeof(Point), "First item has different data");
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((Point *)point_heap.data) + 1, sizeof(Point), "Second item has different data");
+}
+
+/*! @} */
+
+/*!
+ * \defgroup min_heap_remove Test min heap remove function
+ * @{
+ */
 
 void check_min_heap_remove_with_null_handler(void) {
     TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_remove(NULL, 0, NULL));
@@ -336,6 +426,88 @@ void check_min_heap_remove_down_heapify_data(void) {
     min_heap_remove(&point_heap, 0, NULL);
     TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, point_heap.data_size, 6);
 }
+void check_min_heap_remove_not_heapify_data(void) {
+    Point root = { .x = 1.f, .y = 1.f };
+    Point l = { .x = 1.4f, .y = 1.3f };
+    Point r = { .x = 10.f, .y = 10.f };
+
+    Point ll = { .x = 2.f, .y = 2.f };
+    Point lr = { .x = 3.14f, .y = 2.5f };
+    Point rl = { .x = 11.f, .y = 11.f };
+    Point rr = { .x = 12.f, .y = 12.f };
+
+    Point lll = { .x = 6.f, .y = 6.f };
+    Point llr = { .x = 7.f, .y = 7.f };
+
+    point_heap.size = 9;
+    ((Point *)point_heap.data)[0] = root;
+    ((Point *)point_heap.data)[1] = l;
+    ((Point *)point_heap.data)[2] = r;
+    ((Point *)point_heap.data)[3] = ll;
+    ((Point *)point_heap.data)[4] = lr;
+    ((Point *)point_heap.data)[5] = rl;
+    ((Point *)point_heap.data)[6] = rr;
+    ((Point *)point_heap.data)[7] = lll;
+    ((Point *)point_heap.data)[8] = llr;
+
+    min_heap_remove(&point_heap, 3, NULL);
+
+    // After the deletion of the 'root' node the new root is expected to be 'r'
+    Point expected[8] = { root, l, r, llr, lr, rl, rr, lll };
+
+    min_heap_remove(&point_heap, 3, NULL);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 8);
+}
+void check_min_heap_remove_root_not_down_heapify_data(void) {
+    Point root = { .x = 7.f, .y = 7.f };
+    Point l = { .x = 8.f, .y = 8.f };
+    Point r = { .x = 7.f, .y = 7.f };
+
+    Point ll = { .x = 3.f, .y = 3.f };
+    Point lr = { .x = 4.f, .y = 4.f };
+    Point rl = { .x = 5.f, .y = 5.f };
+    Point rr = { .x = 6.f, .y = 6.f };
+
+    Point lll = { .x = 4.f, .y = 4.f };
+    Point llr = { .x = 4.f, .y = 4.f };
+    Point lrl = { .x = 5.f, .y = 5.f };
+    Point lrr = { .x = 5.f, .y = 5.f };
+    Point rll = { .x = 11.f, .y = 11.f };
+    Point rlr = { .x = 11.f, .y = 11.f };
+    Point rrl = { .x = 7.f, .y = 7.f };
+    Point rrr = { .x = 10.f, .y = 10.f };
+
+    point_heap.capacity = 16;
+    point_heap.size = 15;
+    ((Point *)point_heap.data)[0] = root;
+    ((Point *)point_heap.data)[1] = l;
+    ((Point *)point_heap.data)[2] = r;
+    ((Point *)point_heap.data)[3] = ll;
+    ((Point *)point_heap.data)[4] = lr;
+    ((Point *)point_heap.data)[5] = rl;
+    ((Point *)point_heap.data)[6] = rr;
+    ((Point *)point_heap.data)[7] = lll;
+    ((Point *)point_heap.data)[8] = llr;
+    ((Point *)point_heap.data)[9] = lrl;
+    ((Point *)point_heap.data)[10] = lrr;
+    ((Point *)point_heap.data)[11] = rll;
+    ((Point *)point_heap.data)[12] = rlr;
+    ((Point *)point_heap.data)[13] = rrl;
+    ((Point *)point_heap.data)[14] = rrr;
+
+    Point expected[14] = { r, l, rl, ll, lr, rrr, rr, lll, llr, lrl, lrr, rll, rlr, rrl };
+
+    min_heap_remove(&point_heap, 0, NULL);
+
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 14);
+}
+
+/*! @} */
+
+/*!
+ * \defgroup min_heap_find Test min heap find function
+ * @{
+ */
 
 void check_min_heap_find_with_null_heap(void) {
     int a = 0;
@@ -364,92 +536,128 @@ void check_min_heap_find_success(void) {
     int a = 3;
     TEST_ASSERT_EQUAL(1, min_heap_find(&int_heap, &a));
 }
+void check_min_heap_find_when_null_compare(void) {
+    MinHeapHandler_t heap;
+    heap.compare = NULL;
+    int a = 0;
+    TEST_ASSERT_LESS_THAN_INT(0, min_heap_find(&heap, &a));
+}
+void check_min_heap_find_when_null_data(void) {
+    MinHeapHandler_t heap;
+    heap.data = NULL;
+    int a = 0;
+    TEST_ASSERT_LESS_THAN_INT(0, min_heap_find(&heap, &a));
+}
+
+/*! @} */
 
 int main() {
     UNITY_BEGIN();
 
     /*!
-    * \defgroup Testing Initialization of Heap
-    * @{
-    */
+     * \addtogroup min_heap_init Run test for mean heap initialization
+     * @{
+     */
+
     RUN_TEST(check_min_heap_init_with_null_handler);
+    RUN_TEST(check_min_heap_init_with_null_arena);
     RUN_TEST(check_min_heap_init_with_null_callback);
     RUN_TEST(check_min_heap_init);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Size Functions
-    * @{
-    */
+     * \addtogroup min_heap_size Run test for mean heap size function
+     * @{
+     */
+
+    RUN_TEST(check_min_heap_size_null);
     RUN_TEST(check_min_heap_size_empty);
     RUN_TEST(check_min_heap_size_not_empty);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Emptiness Functions
-    * @{
-    */
+     * \addtogroup min_heap_is_empty Run test for min heap empty function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_empty_with_null);
     RUN_TEST(check_min_heap_empty_when_empty);
     RUN_TEST(check_min_heap_empty_when_not_empty);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Fullness Functions
-    * @{
-    */
+     * \defgroup min_heap_full Run test for min heap fullness function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_full_with_null);
     RUN_TEST(check_min_heap_full_when_full);
     RUN_TEST(check_min_heap_full_when_not_full);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Top Functions
-    * @{
-    */
+     * \addtogroup min_heap_top Run test for min heap top function
+     * @{
+     */
+
+    RUN_TEST(check_min_heap_top_with_null_data_heap);
     RUN_TEST(check_min_heap_top_with_null_heap);
     RUN_TEST(check_min_heap_top_with_null_item);
     RUN_TEST(check_min_heap_top_when_empty);
     RUN_TEST(check_min_heap_top_when_not_empty_return_value);
     RUN_TEST(check_min_heap_top_when_not_empty_data);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Peek Functions
-    * @{
-    */
+     * \addtogroup min_heap_peek Run test for min heap peek function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_peek_with_null);
     RUN_TEST(check_min_heap_peek_when_empty);
     RUN_TEST(check_min_heap_peek_when_not_empty);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Clear Functions
-    * @{
-    */
+     * \addtogroup min_heap_clear Run test for mean heap clear function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_clear_with_null);
     RUN_TEST(check_min_heap_clear_return_value);
     RUN_TEST(check_min_heap_clear_size);
-    /*!@} */
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Insert Functions
-    * @{
-    */
+     * \addtogroup min_heap_insert Run test for min heap insert function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_insert_with_null_handler);
     RUN_TEST(check_min_heap_insert_with_null_compare);
     RUN_TEST(check_min_heap_insert_with_null_item);
+    RUN_TEST(check_min_heap_insert_with_null_data);
     RUN_TEST(check_min_heap_insert_when_full);
     RUN_TEST(check_min_heap_insert_return_value);
     RUN_TEST(check_min_heap_insert_size);
     RUN_TEST(check_min_heap_insert_top_data);
     RUN_TEST(check_min_heap_insert_middle_data);
-    /*!@} */
+    RUN_TEST(check_min_heap_insert_middle_data_in_order);
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Remove Functions
-    * @{
-    */
+     * \addtogroup min_heap_remove Run test for min heap remove function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_remove_with_null_handler);
     RUN_TEST(check_min_heap_remove_with_null_compare);
     RUN_TEST(check_min_heap_remove_when_empty);
@@ -461,18 +669,25 @@ int main() {
     RUN_TEST(check_min_heap_remove_equal_data);
     RUN_TEST(check_min_heap_remove_up_heapify_data);
     RUN_TEST(check_min_heap_remove_down_heapify_data);
-    /*!@} */
+    RUN_TEST(check_min_heap_remove_not_heapify_data);
+    RUN_TEST(check_min_heap_remove_root_not_down_heapify_data);
+
+    /*! @} */
 
     /*!
-    * \defgroup Testing Heap Find Functions
-    * @{
-    */
+     * \addtogroup min_heap_find Run test for min heap find function
+     * @{
+     */
+
     RUN_TEST(check_min_heap_find_with_null_heap);
     RUN_TEST(check_min_heap_find_with_null_item);
     RUN_TEST(check_min_heap_find_when_empty);
     RUN_TEST(check_min_heap_find_fail);
     RUN_TEST(check_min_heap_find_success);
-    /*!@} */
+    RUN_TEST(check_min_heap_find_when_null_compare);
+    RUN_TEST(check_min_heap_find_when_null_data);
+
+    /*! @} */
 
     UNITY_END();
 }

@@ -1,7 +1,7 @@
 # MIN-HEAP
 
 This library implements all the functions used to create and manage a [minimum heap](https://it.wikipedia.org/wiki/Heap_(struttura_dati))
-data structure. An arena allocator is used to dynamically allocate the array.
+data structure. An arena allocator is used to dynamically allocate the memory needed by the heap items, allocation is done only during initialization.
 
 > [!IMPORTANT]
 > This library does not guarantee that the functions will be executed correctly
@@ -26,7 +26,7 @@ This library implements:
 
 ## Dependencies
 
-This library uses [ArenaAllocator](https://github.com/eagletrt/libarena-allocator-sw.git) for memory management. Make sure to initialize ArenaAllocatorHandler_t to use data array, as shown in the following section.
+This library uses [ArenaAllocator](https://github.com/eagletrt/libarena-allocator-sw.git) for memory management. Make sure to initialize the allocator handler before the heap initialization step.
 
 ## Usage
 
