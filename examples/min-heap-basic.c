@@ -39,7 +39,7 @@ int main(void) {
      * min heap buffer.
      */
     arena_allocator_api_init(&arena);
-    min_heap_init(&int_heap, sizeof(int), 20, min_heap_compare_int, &arena);
+    min_heap_api_init(&int_heap, sizeof(int), 20, min_heap_compare_int, &arena);
 
     /**
      * Checking if it is not possible to insert any new 
@@ -47,25 +47,25 @@ int main(void) {
      */
     for (int i = 0; i < 22; ++i) {
         int num = rand() % 100 + 1;
-        if (min_heap_insert(&int_heap, &num) != MIN_HEAP_OK)
+        if (min_heap_api_insert(&int_heap, &num) != MIN_HEAP_OK)
             printf("[ERROR]: Cannot insert element in the heap\n");
     }
 
-    printf("Heap size: %lu\n", min_heap_size(&int_heap));
+    printf("Heap size: %lu\n", min_heap_api_size(&int_heap));
     int min = 0;
-    if (min_heap_top(&int_heap, &min) == MIN_HEAP_OK)
+    if (min_heap_api_top(&int_heap, &min) == MIN_HEAP_OK)
         printf("Minimum element: %d\n", min);
 
     printf("Values: ");
-    while (!min_heap_is_empty(&int_heap)) {
+    while (!min_heap_api_is_empty(&int_heap)) {
         int num;
-        if (min_heap_remove(&int_heap, 0, &num) == MIN_HEAP_OK)
+        if (min_heap_api_remove(&int_heap, 0, &num) == MIN_HEAP_OK)
             printf("%d ", num);
     }
     printf("\n");
 
     // Clear the heap and free the arena
-    if (min_heap_clear(&int_heap) != MIN_HEAP_OK)
+    if (min_heap_api_clear(&int_heap) != MIN_HEAP_OK)
         printf("[ERROR]: Cannot clear the heap\n");
 
     arena_allocator_api_free(&arena);

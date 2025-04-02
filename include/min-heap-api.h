@@ -38,7 +38,7 @@
  *     - MIN_HEAP_NULL_POINTER if the heap handler, the callback or the arena are NULL
  *     - MIN_HEAP_OK otherwise
  */
-MinHeapReturnCode min_heap_init(
+MinHeapReturnCode min_heap_api_init(
     MinHeapHandler_t *heap,
     size_t data_size,
     size_t capacity,
@@ -51,7 +51,7 @@ MinHeapReturnCode min_heap_init(
  * \param heap The heap handler structure
  * \return size_t The current size
  */
-size_t min_heap_size(MinHeapHandler_t *heap);
+size_t min_heap_api_size(const MinHeapHandler_t *heap);
 
 /*!
  * \brief Check if the heap is empty
@@ -60,7 +60,7 @@ size_t min_heap_size(MinHeapHandler_t *heap);
  * \param heap The heap handler structure
  * \return bool True if the heap is empty, false otherwise
  */
-bool min_heap_is_empty(MinHeapHandler_t *heap);
+bool min_heap_api_is_empty(const MinHeapHandler_t *heap);
 
 /*!
  * \brief Check if the heap is full
@@ -69,7 +69,7 @@ bool min_heap_is_empty(MinHeapHandler_t *heap);
  * \param heap The heap handler structure
  * \return bool True if the heap is full, false otherwise
  */
-bool min_heap_is_full(MinHeapHandler_t *heap);
+bool min_heap_api_is_full(const MinHeapHandler_t *heap);
 
 /*!
  * \brief Get a copy of the first element in the heap (the minimum)
@@ -83,7 +83,7 @@ bool min_heap_is_full(MinHeapHandler_t *heap);
  *     - MIN_HEAP_EMPTY if the heap is empty
  *     - MIN_HEAP_OK otherwise
  */
-MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out);
+MinHeapReturnCode min_heap_api_top(const MinHeapHandler_t *heap, void *out);
 
 /*!
  * \brief Get a reference to the first element in the heap (the minimum)
@@ -94,7 +94,7 @@ MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out);
  * \param heap The heap handler structure
  * \return void * A pointer to the minimum element
  */
-void *min_heap_peek(MinHeapHandler_t *heap);
+void *min_heap_api_peek(const MinHeapHandler_t *heap);
 
 /*!
  * \brief Clear the heap removing all elements
@@ -104,7 +104,7 @@ void *min_heap_peek(MinHeapHandler_t *heap);
  *     - MIN_HEAP_NULL_POINTER if the heap handler is NULL
  *     - MIN_HEAP_OK otherwise
  */
-MinHeapReturnCode min_heap_clear(MinHeapHandler_t *heap);
+MinHeapReturnCode min_heap_api_clear(MinHeapHandler_t *heap);
 
 /*!
  * \brief Insert an element in the heap
@@ -116,7 +116,7 @@ MinHeapReturnCode min_heap_clear(MinHeapHandler_t *heap);
  *     - MIN_HEAP_FULL if the heap is full
  *     - MIN_HEAP_OK otherwise
  */
-MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item);
+MinHeapReturnCode min_heap_api_insert(MinHeapHandler_t *heap, void *item);
 
 /*!
  * \brief Remove an element from the heap
@@ -132,7 +132,7 @@ MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item);
  *     - MIN_HEAP_OUT_OF_BOUNDS if the index is greater than the size of the heap
  *     - MIN_HEAP_OK otherwise
  */
-MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *out);
+MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void *out);
 
 /*!
  * \brief Find the index of an item in the heap array
@@ -142,6 +142,6 @@ MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *ou
  * \param item The item to find
  * \return signed_size_t The index in the heap of the item if found, -1 otherwise
  */
-signed_size_t min_heap_find(MinHeapHandler_t *heap, void *item);
+signed_size_t min_heap_api_find(const MinHeapHandler_t *heap, void *item);
 
 #endif

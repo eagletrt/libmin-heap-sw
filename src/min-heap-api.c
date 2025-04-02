@@ -32,14 +32,14 @@
 #define MIN_HEAP_CHILD_L(I) ((I) * 2 + 1)
 #define MIN_HEAP_CHILD_R(I) ((I) * 2 + 2)
 
-static inline void min_heap_swap(MinHeapHandler_t *heap, void *a, void *b) {
+static inline void min_heap_swap(const MinHeapHandler_t *heap, void *a, void *b) {
     uint8_t aux[heap->data_size]; //local buffer as a swapping area
     memcpy(aux, a, heap->data_size);
     memcpy(a, b, heap->data_size);
     memcpy(b, aux, heap->data_size);
 }
 
-MinHeapReturnCode min_heap_init(
+MinHeapReturnCode min_heap_api_init(
     MinHeapHandler_t *heap,
     size_t data_size,
     size_t capacity,
@@ -57,19 +57,19 @@ MinHeapReturnCode min_heap_init(
     return MIN_HEAP_OK;
 }
 
-size_t min_heap_size(MinHeapHandler_t *heap) {
+size_t min_heap_api_size(const MinHeapHandler_t *heap) {
     return heap == NULL ? 0U : heap->size;
 }
 
-bool min_heap_is_empty(MinHeapHandler_t *heap) {
+bool min_heap_api_is_empty(const MinHeapHandler_t *heap) {
     return heap == NULL ? true : heap->size == 0;
 }
 
-bool min_heap_is_full(MinHeapHandler_t *heap) {
+bool min_heap_api_is_full(const MinHeapHandler_t *heap) {
     return heap == NULL ? true : heap->size >= heap->capacity;
 }
 
-MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out) {
+MinHeapReturnCode min_heap_api_top(const MinHeapHandler_t *heap, void *out) {
     if (heap == NULL || out == NULL || heap->data == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == 0)
@@ -78,20 +78,20 @@ MinHeapReturnCode min_heap_top(MinHeapHandler_t *heap, void *out) {
     return MIN_HEAP_OK;
 }
 
-void *min_heap_peek(MinHeapHandler_t *heap) {
+void *min_heap_api_peek(const MinHeapHandler_t *heap) {
     if (heap == NULL || heap->size == 0)
         return NULL;
     return heap->data;
 }
 
-MinHeapReturnCode min_heap_clear(MinHeapHandler_t *heap) {
+MinHeapReturnCode min_heap_api_clear(MinHeapHandler_t *heap) {
     if (heap == NULL)
         return MIN_HEAP_NULL_POINTER;
     heap->size = 0;
     return MIN_HEAP_OK;
 }
 
-MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item) {
+MinHeapReturnCode min_heap_api_insert(MinHeapHandler_t *heap, void *item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->data == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == heap->capacity)
@@ -117,7 +117,7 @@ MinHeapReturnCode min_heap_insert(MinHeapHandler_t *heap, void *item) {
     return MIN_HEAP_OK;
 }
 
-MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *out) {
+MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void *out) {
     if (heap == NULL || heap->compare == NULL)
         return MIN_HEAP_NULL_POINTER;
     if (heap->size == 0)
@@ -188,7 +188,7 @@ MinHeapReturnCode min_heap_remove(MinHeapHandler_t *heap, size_t index, void *ou
     return MIN_HEAP_OK;
 }
 
-signed_size_t min_heap_find(MinHeapHandler_t *heap, void *item) {
+signed_size_t min_heap_api_find(const MinHeapHandler_t *heap, void *item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL)
         return -1;
 
