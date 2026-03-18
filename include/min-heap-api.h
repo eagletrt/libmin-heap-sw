@@ -1,6 +1,6 @@
 /*!
  * \file min-heap-api.h
- * \date 2025-03-28
+ * \date 2026-03-18
  * \authors Antonio Gelain [antonio.gelain@studenti.unitn.it]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
@@ -27,121 +27,114 @@
 /*!
  * \brief Initialize the minimum heap structure
  *
- * \details If the min_heap_new macro is used this function is not needed
- *
- * \param heap The min heap structur handler
- * \param type The type of the items
- * \param capacity The maximum number of the items in the heap
- * \param cmp_callback A pointer to a function that should compare two items of the heap
- * \param arena The arena allocator handler needed to allocate the data buffer
- * \return MinHeapReturnCode
- *     - MIN_HEAP_NULL_POINTER if the heap handler, the callback or the arena are NULL
- *     - MIN_HEAP_OK otherwise
+ * \param[in] heap The min heap structure handler
+ * \param[in] type The type of the items
+ * \param[in] capacity The maximum number of the items in the heap
+ * \param[in] cmp_callback A pointer to a function that should compare two items of the heap
+ * \param[in] arena The arena allocator handler needed to allocate the data buffer
+ * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler, the callback or the arena are \c NULL
+ * \retval MIN_HEAP_RC_OK otherwise
  */
-MinHeapReturnCode min_heap_api_init(
-    MinHeapHandler_t *heap,
-    size_t data_size,
-    size_t capacity,
+enum MinHeapReturnCode min_heap_api_init(
+    struct MinHeapHandler *const heap,
+    const size_t data_size,
+    const size_t capacity,
     int8_t (*compare)(void *, void *),
-    ArenaAllocatorHandler_t *arena);
+    struct ArenaAllocatorHandler *const arena);
 
 /*!
  * \brief Get the number of elements inside the heap
  *
- * \param heap The heap handler structure
+ * \param[in] heap The heap handler structure
  * \return size_t The current size
  */
-size_t min_heap_api_size(const MinHeapHandler_t *heap);
+size_t min_heap_api_size(const struct MinHeapHandler *const heap);
 
 /*!
  * \brief Check if the heap is empty
- * \details If heap is NULL it is considered as empty
+ * \details If heap is \c NULL it is considered as empty
  *
- * \param heap The heap handler structure
- * \return bool True if the heap is empty, false otherwise
+ * \param[in] heap The heap handler structure
+ * \return \c true if the heap is empty, \c false otherwise
  */
-bool min_heap_api_is_empty(const MinHeapHandler_t *heap);
+bool min_heap_api_is_empty(const struct MinHeapHandler *const heap);
 
 /*!
  * \brief Check if the heap is full
- * \details If heap is NULL it is considered as full
+ * \details If heap is \c NULL it is considered as full
  *
- * \param heap The heap handler structure
- * \return bool True if the heap is full, false otherwise
+ * \param[in] heap The heap handler structure
+ * \return \c true if the heap is full, \c false otherwise
  */
-bool min_heap_api_is_full(const MinHeapHandler_t *heap);
+bool min_heap_api_is_full(const struct MinHeapHandler *const heap);
 
 /*!
  * \brief Get a copy of the first element in the heap (the minimum)
  * \attention The out variable has to be an address of a variable compatible
  * with the items in the heap (e.g. int if the heap contains integers)
  * 
- * \param heap The heap handler structure
- * \param out The address of the variable where the copy is stored
- * \return MinHeapReturnCode
- *     - MIN_HEAP_NULL_POINTER if the heap handler or out are NULL
- *     - MIN_HEAP_EMPTY if the heap is empty
- *     - MIN_HEAP_OK otherwise
+ * \param[in] heap The heap handler structure
+ * \param[out] out The address of the variable where the copy is stored
+ * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler or \c out are \c NULL
+ * \retval MIN_HEAP_RC_EMPTY if the heap is empty
+ * \retval MIN_HEAP_RC_OK otherwise
  */
-MinHeapReturnCode min_heap_api_top(const MinHeapHandler_t *heap, void *out);
+enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *const heap, void *const out);
 
 /*!
  * \brief Get a reference to the first element in the heap (the minimum)
- * \attention The return value can be NULL
+ * \attention The return value can be \c NULL
  * \attention Keep in mind that the content of the first item in the heap
- * can change even if the pointer don't
+ * can change even if the pointer doesn't
  *
- * \param heap The heap handler structure
- * \return void * A pointer to the minimum element
+ * \param[in] heap The heap handler structure
+ * \return A pointer to the minimum element
  */
-void *min_heap_api_peek(const MinHeapHandler_t *heap);
+void *min_heap_api_peek(const struct MinHeapHandler *const heap);
 
 /*!
  * \brief Clear the heap removing all elements
  *
  * \param heap The heap handler structure
- * \return MinHeapReturnCode
- *     - MIN_HEAP_NULL_POINTER if the heap handler is NULL
- *     - MIN_HEAP_OK otherwise
+ * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler is \c NULL
+ * \retval MIN_HEAP_RC_OK otherwise
  */
-MinHeapReturnCode min_heap_api_clear(MinHeapHandler_t *heap);
+enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *const heap);
 
 /*!
  * \brief Insert an element in the heap
  *
- * \param heap The heap handler structure
- * \param item The item to insert
- * \return MinHeapReturnCode
- *     - MIN_HEAP_NULL_POINTER if the heap handler, the compare callback or the item are NULL
- *     - MIN_HEAP_FULL if the heap is full
- *     - MIN_HEAP_OK otherwise
+ * \param[in] heap The heap handler structure
+ * \param[in] item The item to insert
+ * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler, the compare callback or the item are \c NULL
+ * \retval MIN_HEAP_RC_FULL if the heap is full
+ * \retval MIN_HEAP_RC_OK otherwise
  */
-MinHeapReturnCode min_heap_api_insert(MinHeapHandler_t *heap, void *item);
+enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, const void *const item);
 
 /*!
  * \brief Remove an element from the heap
- * \attention 'out' can be NULL
- * \details If 'out' is not NULL the item data is copied into it
+ * \attention \c out can be \c NULL
+ * \details If \c out is **not** \c NULL the item data is copied into it
  *
- * \param heap The heap handler structure
- * \param index The index of the item to remove from the heap
- * \param out The removed item (has to be an address)
- * \return MinHeapReturnCode
- *     - MIN_HEAP_NULL_POINTER if the heap handler or the compare callback are NULL
- *     - MIN_HEAP_EMPTY if the heap is empty
- *     - MIN_HEAP_OUT_OF_BOUNDS if the index is greater than the size of the heap
- *     - MIN_HEAP_OK otherwise
+ * \param[in] heap The heap handler structure
+ * \param[in] index The index of the item to remove from the heap
+ * \param[out] out The removed item (has to be an address)
+ * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler or the compare callback are \c NULL
+ * \retval MIN_HEAP_RC_EMPTY if the heap is empty
+ * \retval MIN_HEAP_RC_OUT_OF_BOUNDS if the index is greater than the size of the heap
+ * \retval MIN_HEAP_RC_OK otherwise
  */
-MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void *out);
+enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, size_t index, void *const out);
 
 /*!
  * \brief Find the index of an item in the heap array
  * \details This function has linear time complexity, use it wisely
  *
- * \param heap The heap handler structure
- * \param item The item to find
- * \return signed_size_t The index in the heap of the item if found, -1 otherwise
+ * \param[in] heap The heap handler structure
+ * \param[in] item The item to find
+ * \return long The index in the heap of the item if found, -1 otherwise
  */
-signed_size_t min_heap_api_find(const MinHeapHandler_t *heap, void *item);
+long min_heap_api_find(const struct MinHeapHandler *const heap, void *const item);
 
 #endif

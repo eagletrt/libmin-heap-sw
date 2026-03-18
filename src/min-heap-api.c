@@ -1,6 +1,6 @@
 /*!
  * \file min-heap-api.c
- * \date 2025-03-28
+ * \date 2026-03-18
  * \authors Antonio Gelain [antonio.gelain@studenti.unitn.it]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
@@ -18,6 +18,7 @@
  *      by using the arena allocator.
  */
 
+#include "eagletrt-api.h"
 #include "min-heap-api.h"
 
 #include <string.h>
@@ -28,74 +29,83 @@
  * \param I The current item index
  * \return The parent, left child or right child respectively
  */
-#define MIN_HEAP_PARENT(I) ((I - 1) / 2)
-#define MIN_HEAP_CHILD_L(I) ((I) * 2 + 1)
-#define MIN_HEAP_CHILD_R(I) ((I) * 2 + 2)
+#define MIN_HEAP_PARENT(I) (((I) - 1) / 2)
+#define MIN_HEAP_CHILD_L(I) (((I) * 2) + 1)
+#define MIN_HEAP_CHILD_R(I) (((I) * 2) + 2)
 
-static inline void min_heap_swap(const MinHeapHandler_t *heap, void *a, void *b) {
+/**
+ * \brief Helper function to swap two elements that are located in the heap
+ * 
+ * \details The function will swap the element *a* with the element *b*
+ * 
+ * \param heap The min heap structure handler
+ * \param a The address of the first element to be swapped
+ * \param b The address of the second element to be swapped
+ */
+EAGLETRT_STATIC_INLINE void min_heap_swap(const struct MinHeapHandler *heap, void *a, void *b) {
     uint8_t aux[heap->data_size]; //local buffer as a swapping area
     memcpy(aux, a, heap->data_size);
     memcpy(a, b, heap->data_size);
     memcpy(b, aux, heap->data_size);
 }
 
-MinHeapReturnCode min_heap_api_init(
-    MinHeapHandler_t *heap,
-    size_t data_size,
-    size_t capacity,
+enum MinHeapReturnCode min_heap_api_init(
+    struct MinHeapHandler *const heap,
+    const size_t data_size,
+    const size_t capacity,
     int8_t (*compare)(void *, void *),
-    ArenaAllocatorHandler_t *arena) {
+    struct ArenaAllocatorHandler *const arena) {
     if (heap == NULL || compare == NULL || arena == NULL)
-        return MIN_HEAP_NULL_POINTER;
+        return MIN_HEAP_RC_NULL_POINTER;
     heap->data_size = data_size;
     heap->size = 0;
     heap->capacity = capacity;
     heap->compare = compare;
     heap->data = arena_allocator_api_calloc(arena, data_size, capacity);
     if (heap->data == NULL)
-        return MIN_HEAP_NULL_POINTER;
-    return MIN_HEAP_OK;
+        return MIN_HEAP_RC_NULL_POINTER;
+    return MIN_HEAP_RC_OK;
 }
 
-size_t min_heap_api_size(const MinHeapHandler_t *heap) {
+size_t min_heap_api_size(const struct MinHeapHandler *const heap) {
     return heap == NULL ? 0U : heap->size;
 }
 
-bool min_heap_api_is_empty(const MinHeapHandler_t *heap) {
+bool min_heap_api_is_empty(const struct MinHeapHandler *const heap) {
     return heap == NULL ? true : heap->size == 0;
 }
 
-bool min_heap_api_is_full(const MinHeapHandler_t *heap) {
+bool min_heap_api_is_full(const struct MinHeapHandler *const heap) {
     return heap == NULL ? true : heap->size >= heap->capacity;
 }
 
-MinHeapReturnCode min_heap_api_top(const MinHeapHandler_t *heap, void *out) {
+enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *const heap, void *const out) {
     if (heap == NULL || out == NULL || heap->data == NULL)
-        return MIN_HEAP_NULL_POINTER;
+        return MIN_HEAP_RC_NULL_POINTER;
     if (heap->size == 0)
-        return MIN_HEAP_EMPTY;
+        return MIN_HEAP_RC_EMPTY;
     memcpy(out, heap->data, heap->data_size);
-    return MIN_HEAP_OK;
+    return MIN_HEAP_RC_OK;
 }
 
-void *min_heap_api_peek(const MinHeapHandler_t *heap) {
+void *min_heap_api_peek(const struct MinHeapHandler *const heap) {
     if (heap == NULL || heap->size == 0)
         return NULL;
     return heap->data;
 }
 
-MinHeapReturnCode min_heap_api_clear(MinHeapHandler_t *heap) {
+enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *const heap) {
     if (heap == NULL)
-        return MIN_HEAP_NULL_POINTER;
+        return MIN_HEAP_RC_NULL_POINTER;
     heap->size = 0;
-    return MIN_HEAP_OK;
+    return MIN_HEAP_RC_OK;
 }
 
-MinHeapReturnCode min_heap_api_insert(MinHeapHandler_t *heap, void *item) {
+enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, const void *const item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->data == NULL)
-        return MIN_HEAP_NULL_POINTER;
+        return MIN_HEAP_RC_NULL_POINTER;
     if (heap->size == heap->capacity)
-        return MIN_HEAP_FULL;
+        return MIN_HEAP_RC_FULL;
 
     // Insert item at the end of the heap
     const size_t data_size = heap->data_size;
@@ -114,16 +124,16 @@ MinHeapReturnCode min_heap_api_insert(MinHeapHandler_t *heap, void *item) {
         cur = parent;
         parent = MIN_HEAP_PARENT(cur);
     }
-    return MIN_HEAP_OK;
+    return MIN_HEAP_RC_OK;
 }
 
-MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void *out) {
+enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, size_t index, void *const out) {
     if (heap == NULL || heap->compare == NULL)
-        return MIN_HEAP_NULL_POINTER;
+        return MIN_HEAP_RC_NULL_POINTER;
     if (heap->size == 0)
-        return MIN_HEAP_EMPTY;
+        return MIN_HEAP_RC_EMPTY;
     if (index >= heap->size)
-        return MIN_HEAP_OUT_OF_BOUNDS;
+        return MIN_HEAP_RC_OUT_OF_BOUNDS;
 
     // Swap the error with the last one in the heap (if not the same)
     uint8_t *base = (uint8_t *)heap->data;
@@ -139,7 +149,7 @@ MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void
         memcpy(out, base + heap->size * data_size, data_size);
 
     if (index == heap->size)
-        return MIN_HEAP_OK;
+        return MIN_HEAP_RC_OK;
 
     // Restore heap properties
     int8_t cmp = heap->compare(base + index * data_size, base + heap->size * data_size);
@@ -185,10 +195,10 @@ MinHeapReturnCode min_heap_api_remove(MinHeapHandler_t *heap, size_t index, void
         if (l < heap->size && heap->compare(base + l * data_size, base + index * data_size) < 0)
             min_heap_swap(heap, base + index * data_size, base + child * data_size);
     }
-    return MIN_HEAP_OK;
+    return MIN_HEAP_RC_OK;
 }
 
-signed_size_t min_heap_api_find(const MinHeapHandler_t *heap, void *item) {
+long min_heap_api_find(const struct MinHeapHandler *const heap, void *const item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL)
         return -1;
 

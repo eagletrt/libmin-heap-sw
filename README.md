@@ -30,16 +30,15 @@ This library uses [ArenaAllocator](https://github.com/eagletrt/libarena-allocato
 
 ## Usage
 
-To create a min heap, first declare a variable using `MinHeapHandler_t`. In order to initialize it, an arena allocator is needed.\
+To create a min heap, first declare a variable using `struct MinHeapHandler`. In order to initialize it, an arena allocator is needed.
+
 For example:
 ```c
-MinHeapHandler_t int_heap;
-MinHeapHandler_t point_heap;
-ArenaAllocatorHandler_t arena;
+struct MinHeapHandler int_heap;
+struct ArenaAllocatorHandler arena;
 
 arena_allocator_api_init(&arena);
 min_heap_init(&int_heap, sizeof(int), 20, min_heap_compare_int, &arena);
-min_heap_init(&point_heap, sizeof(struct), 13, min_heap_compare_point, &arena);
 ```
 
 To remove any trace of the buffer, the solely `min_heap_clear` function is not sufficient as it doesn't deallocate the data buffer.
@@ -47,7 +46,6 @@ To do so, `arena_allocator_api_free` will be used as follows:
 
 ```c
 min_heap_clear(&int_heap);
-min_heap_clear(&point_heap);
 arena_allocator_api_free(&arena);
 ```
 
