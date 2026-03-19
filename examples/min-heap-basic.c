@@ -1,6 +1,6 @@
 /*!
  * \file min-heap-basic.c
- * \date 2025-03-28
+ * \date 2026-03-18
  * \authors Antonio Gelain [antonio.gelain2@gmail.com]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
@@ -31,8 +31,8 @@ int8_t min_heap_compare_int(void *a, void *b) {
 
 int main(void) {
     srand(time(NULL));
-    MinHeapHandler_t int_heap;
-    ArenaAllocatorHandler_t arena;
+    struct MinHeapHandler int_heap;
+    struct ArenaAllocatorHandler arena;
 
     /**
      * Initialize arena allocator for managing 
@@ -47,25 +47,25 @@ int main(void) {
      */
     for (int i = 0; i < 22; ++i) {
         int num = rand() % 100 + 1;
-        if (min_heap_api_insert(&int_heap, &num) != MIN_HEAP_OK)
+        if (min_heap_api_insert(&int_heap, &num) != MIN_HEAP_RC_OK)
             printf("[ERROR]: Cannot insert element in the heap\n");
     }
 
     printf("Heap size: %lu\n", min_heap_api_size(&int_heap));
     int min = 0;
-    if (min_heap_api_top(&int_heap, &min) == MIN_HEAP_OK)
+    if (min_heap_api_top(&int_heap, &min) == MIN_HEAP_RC_OK)
         printf("Minimum element: %d\n", min);
 
     printf("Values: ");
     while (!min_heap_api_is_empty(&int_heap)) {
         int num;
-        if (min_heap_api_remove(&int_heap, 0, &num) == MIN_HEAP_OK)
+        if (min_heap_api_remove(&int_heap, 0, &num) == MIN_HEAP_RC_OK)
             printf("%d ", num);
     }
     printf("\n");
 
     // Clear the heap and free the arena
-    if (min_heap_api_clear(&int_heap) != MIN_HEAP_OK)
+    if (min_heap_api_clear(&int_heap) != MIN_HEAP_RC_OK)
         printf("[ERROR]: Cannot clear the heap\n");
 
     arena_allocator_api_free(&arena);

@@ -1,6 +1,6 @@
 /*!
  * \file min-heap.h
- * \date 2025-03-28
+ * \date 2026-03-18
  * \authors Antonio Gelain [antonio.gelain@studenti.unitn.it]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
@@ -22,42 +22,25 @@
 #include <stdbool.h>
 
 /*!
- * \struct MinHeapHandler_t
- *
- * \var size_t data_size
- *       The size of a single item in bytes
- *
- * \var size_t size
- *       The number of elements contained in the heap
- *
- * \var size_t capacity
- *       The maximum number of elements that can be contained in the heap
- *
- * \var int8_t (*compare)(void *, void*)
- *       The function used to compare two element 
- *
- * \var void *data
- *       The buffer containign the data
+ * \brief Internal state handler for the minimum heap
  */
-typedef struct {
-    size_t data_size;
-    size_t size;
-    size_t capacity;
-    int8_t (*compare)(void *, void *);
-    void *data;
-} MinHeapHandler_t;
+struct MinHeapHandler {
+    size_t data_size;                  /*!< The size of a single item in bytes */
+    size_t size;                       /*!< The number of elements contained in the heap */
+    size_t capacity;                   /*!< The maximum number of elements that can be contained in the heap */
+    int8_t (*compare)(void *, void *); /*!< The function used to compare two elements */
+    void *data;                        /*!< The buffer containing the data */
+};
 
 /*!
  * \brief Enum with all the possible return codes for the min heap functions
  */
-typedef enum {
-    MIN_HEAP_OK,
-    MIN_HEAP_NULL_POINTER,
-    MIN_HEAP_EMPTY,
-    MIN_HEAP_FULL,
-    MIN_HEAP_OUT_OF_BOUNDS
-} MinHeapReturnCode;
-
-typedef long signed_size_t;
+enum MinHeapReturnCode {
+    MIN_HEAP_RC_OK,           /*!< Operation completed successfully */
+    MIN_HEAP_RC_NULL_POINTER, /*!< A provided pointer was NULL */
+    MIN_HEAP_RC_EMPTY,        /*!< The heap is empty; no elements to extract or peek */
+    MIN_HEAP_RC_FULL,         /*!< The heap is at maximum capacity; cannot insert more elements */
+    MIN_HEAP_RC_OUT_OF_BOUNDS /*!< The requested operation exceeds the heap boundaries */
+};
 
 #endif

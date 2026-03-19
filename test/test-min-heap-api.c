@@ -1,6 +1,6 @@
 /*!
  * \file min-heap-api.h
- * \date 2025-03-28
+ * \date 2026-03-18
  * \authors Antonio Gelain [antonio.gelain@studenti.unitn.it]
  * \authors Dorijan Di Zepp [dorijan.dizepp@eagletrt.it]
  *
@@ -21,9 +21,17 @@
 #include "unity.h"
 #include "min-heap-api.h"
 
-typedef struct {
-    float x, y;
-} Point;
+/*!
+ * \brief A 2D representation of a point in Cartesian space
+ */
+struct Point {
+    float x; /*!< The x coordinate of the point*/
+    float y; /*!< The y coordinate of the point*/
+};
+
+struct MinHeapHandler int_heap;
+struct MinHeapHandler point_heap;
+struct ArenaAllocatorHandler arena;
 
 int8_t min_heap_compare_float(void *f, void *s) {
     float a = *(float *)f;
@@ -40,8 +48,8 @@ int8_t min_heap_compare_int(void *f, void *s) {
     return a == b ? 0 : 1;
 }
 int8_t min_heap_compare_point(void *f, void *s) {
-    Point *a = (Point *)f;
-    Point *b = (Point *)s;
+    struct Point *a = (struct Point *)f;
+    struct Point *b = (struct Point *)s;
     size_t dist_a = a->x * a->x + a->y * a->y;
     size_t dist_b = b->x * b->x + b->y * b->y;
     if (dist_a < dist_b)
@@ -49,14 +57,10 @@ int8_t min_heap_compare_point(void *f, void *s) {
     return dist_a == dist_b ? 0 : 1;
 }
 
-MinHeapHandler_t int_heap;
-MinHeapHandler_t point_heap;
-ArenaAllocatorHandler_t arena;
-
 void setUp(void) {
     arena_allocator_api_init(&arena);
     min_heap_api_init(&int_heap, sizeof(int), 10, min_heap_compare_int, &arena);
-    min_heap_api_init(&point_heap, sizeof(Point), 10, min_heap_compare_point, &arena);
+    min_heap_api_init(&point_heap, sizeof(struct Point), 10, min_heap_compare_point, &arena);
 }
 
 void tearDown(void) {
@@ -71,19 +75,19 @@ void tearDown(void) {
  */
 
 void check_min_heap_api_init_with_null_handler(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_init(NULL, sizeof(float), 3, min_heap_compare_float, &arena));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_init(NULL, sizeof(float), 3, min_heap_compare_float, &arena));
 }
 void check_min_heap_api_init_with_null_arena(void) {
-    MinHeapHandler_t heap;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_init(&heap, sizeof(float), 3, min_heap_compare_float, NULL));
+    struct MinHeapHandler heap;
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_init(&heap, sizeof(float), 3, min_heap_compare_float, NULL));
 }
 void check_min_heap_api_init_with_null_callback(void) {
-    MinHeapHandler_t heap;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_init(&heap, sizeof(float), 3, NULL, &arena));
+    struct MinHeapHandler heap;
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_init(&heap, sizeof(float), 3, NULL, &arena));
 }
 void check_min_heap_api_init(void) {
-    MinHeapHandler_t heap;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_api_init(&heap, sizeof(float), 3, min_heap_compare_float, &arena));
+    struct MinHeapHandler heap;
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OK, min_heap_api_init(&heap, sizeof(float), 3, min_heap_compare_float, &arena));
 }
 
 /*! @} */
@@ -150,28 +154,28 @@ void check_min_heap_api_full_when_not_full(void) {
  */
 
 void check_min_heap_api_top_with_null_data_heap(void) {
-    MinHeapHandler_t heap;
+    struct MinHeapHandler heap;
     heap.data = NULL;
     int a;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_top(&heap, &a));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_top(&heap, &a));
 }
 void check_min_heap_api_top_with_null_heap(void) {
     int a;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_top(NULL, &a));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_top(NULL, &a));
 }
 void check_min_heap_api_top_with_null_item(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_top(&int_heap, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_top(&int_heap, NULL));
 }
 void check_min_heap_api_top_when_empty(void) {
     int a;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_EMPTY, min_heap_api_top(&int_heap, &a));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_EMPTY, min_heap_api_top(&int_heap, &a));
 }
 void check_min_heap_api_top_when_not_empty_return_value(void) {
     const int val = 7;
     int_heap.size = 1;
     ((int *)int_heap.data)[0] = val;
     int a;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_api_top(&int_heap, &a));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OK, min_heap_api_top(&int_heap, &a));
 }
 void check_min_heap_api_top_when_not_empty_data(void) {
     const int val = 7;
@@ -213,12 +217,12 @@ void check_min_heap_api_peek_when_not_empty(void) {
  */
 
 void check_min_heap_api_clear_with_null(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_clear(NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_clear(NULL));
 }
 void check_min_heap_api_clear_return_value(void) {
     // The clear function resets only the size of the int_heap
     int_heap.size = 3;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_api_clear(&int_heap));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OK, min_heap_api_clear(&int_heap));
 }
 void check_min_heap_api_clear_size(void) {
     // The clear function resets only the size of the int_heap
@@ -235,64 +239,64 @@ void check_min_heap_api_clear_size(void) {
  */
 
 void check_min_heap_api_insert_with_null_handler(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_insert(NULL, &p));
+    struct Point p = { .x = 5.4f, .y = 2.7f };
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_insert(NULL, &p));
 }
 void check_min_heap_api_insert_with_null_compare(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
+    struct Point p = { .x = 5.4f, .y = 2.7f };
     point_heap.compare = NULL;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_insert(&point_heap, &p));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_insert(&point_heap, &p));
 }
 void check_min_heap_api_insert_with_null_item(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_insert(&point_heap, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_insert(&point_heap, NULL));
 }
 void check_min_heap_api_insert_with_null_data(void) {
     point_heap.data = NULL;
-    Point p = { .x = 5.4f, .y = 2.7f };
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_insert(&point_heap, &p));
+    struct Point p = { .x = 5.4f, .y = 2.7f };
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_insert(&point_heap, &p));
 }
 void check_min_heap_api_insert_when_full(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
+    struct Point p = { .x = 5.4f, .y = 2.7f };
     point_heap.size = point_heap.capacity;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_FULL, min_heap_api_insert(&point_heap, &p));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_FULL, min_heap_api_insert(&point_heap, &p));
 }
 void check_min_heap_api_insert_return_value(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_api_insert(&point_heap, &p));
+    struct Point p = { .x = 5.4f, .y = 2.7f };
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OK, min_heap_api_insert(&point_heap, &p));
 }
 void check_min_heap_api_insert_size(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
+    struct Point p = { .x = 5.4f, .y = 2.7f };
     min_heap_api_insert(&point_heap, &p);
     TEST_ASSERT_EQUAL_size_t(1U, point_heap.size);
 }
 void check_min_heap_api_insert_top_data(void) {
-    Point p = { .x = 5.4f, .y = 2.7f };
+    struct Point p = { .x = 5.4f, .y = 2.7f };
     min_heap_api_insert(&point_heap, &p);
-    TEST_ASSERT_EQUAL_MEMORY(&p, point_heap.data, sizeof(Point));
+    TEST_ASSERT_EQUAL_MEMORY(&p, point_heap.data, sizeof(struct Point));
 }
 void check_min_heap_api_insert_middle_data(void) {
     // Insert at the top a point that is greater then the next
-    Point p1 = { .x = 5.4f, .y = 2.7f };
-    Point p2 = { .x = 10.f, .y = 10.f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p2 = { .x = 10.f, .y = 10.f };
 
     point_heap.size = 1;
-    ((Point *)point_heap.data)[0] = p2;
+    ((struct Point *)point_heap.data)[0] = p2;
 
     min_heap_api_insert(&point_heap, &p1);
-    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((Point *)point_heap.data), sizeof(Point), "First item has different data");
-    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((Point *)point_heap.data) + 1, sizeof(Point), "Second item has different data");
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((struct Point *)point_heap.data), sizeof(struct Point), "First item has different data");
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((struct Point *)point_heap.data) + 1, sizeof(struct Point), "Second item has different data");
 }
 void check_min_heap_api_insert_middle_data_in_order(void) {
     // Insert at the top a point that is less then the next
-    Point p1 = { .x = 5.4f, .y = 2.7f };
-    Point p2 = { .x = 10.f, .y = 10.f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p2 = { .x = 10.f, .y = 10.f };
 
     point_heap.size = 1;
-    ((Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[0] = p1;
 
     min_heap_api_insert(&point_heap, &p2);
-    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((Point *)point_heap.data), sizeof(Point), "First item has different data");
-    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((Point *)point_heap.data) + 1, sizeof(Point), "Second item has different data");
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p1, ((struct Point *)point_heap.data), sizeof(struct Point), "First item has different data");
+    TEST_ASSERT_EQUAL_MEMORY_MESSAGE(&p2, ((struct Point *)point_heap.data) + 1, sizeof(struct Point), "Second item has different data");
 }
 
 /*! @} */
@@ -303,228 +307,228 @@ void check_min_heap_api_insert_middle_data_in_order(void) {
  */
 
 void check_min_heap_api_remove_with_null_handler(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_remove(NULL, 0, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_remove(NULL, 0, NULL));
 }
 void check_min_heap_api_remove_with_null_compare(void) {
     point_heap.compare = NULL;
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_NULL_POINTER, min_heap_api_remove(&point_heap, 0, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_NULL_POINTER, min_heap_api_remove(&point_heap, 0, NULL));
 }
 void check_min_heap_api_remove_when_empty(void) {
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_EMPTY, min_heap_api_remove(&point_heap, 0, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_EMPTY, min_heap_api_remove(&point_heap, 0, NULL));
 }
 void check_min_heap_api_remove_out_of_bounds(void) {
-    Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
 
     point_heap.size = 1;
-    ((Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[0] = p1;
 
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OUT_OF_BOUNDS, min_heap_api_remove(&point_heap, 10, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OUT_OF_BOUNDS, min_heap_api_remove(&point_heap, 10, NULL));
 }
 void check_min_heap_api_remove_return_value(void) {
-    Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
 
     point_heap.size = 1;
-    ((Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[0] = p1;
 
-    TEST_ASSERT_EQUAL_INT(MIN_HEAP_OK, min_heap_api_remove(&point_heap, 0, NULL));
+    TEST_ASSERT_EQUAL_INT(MIN_HEAP_RC_OK, min_heap_api_remove(&point_heap, 0, NULL));
 }
 void check_min_heap_api_remove_removed_item_data(void) {
-    Point p1 = { .x = 5.4f, .y = 2.7f };
-    Point removed;
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point removed;
 
     point_heap.size = 1;
-    ((Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[0] = p1;
 
     min_heap_api_remove(&point_heap, 0, &removed);
-    TEST_ASSERT_EQUAL_MEMORY(&p1, &removed, sizeof(Point));
+    TEST_ASSERT_EQUAL_MEMORY(&p1, &removed, sizeof(struct Point));
 }
 void check_min_heap_api_remove_size(void) {
-    Point p1 = { .x = 5.4f, .y = 2.7f };
-    Point p2 = { .x = 10.f, .y = 10.f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p2 = { .x = 10.f, .y = 10.f };
 
     point_heap.size = 2;
-    ((Point *)point_heap.data)[0] = p1;
-    ((Point *)point_heap.data)[1] = p2;
+    ((struct Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[1] = p2;
 
     min_heap_api_remove(&point_heap, 1, NULL);
     TEST_ASSERT_EQUAL_size_t(1, point_heap.size);
 }
 void check_min_heap_api_remove_leaf_data(void) {
-    Point p1 = { .x = 5.4f, .y = 2.7f };
-    Point p2 = { .x = 10.f, .y = 10.f };
+    struct Point p1 = { .x = 5.4f, .y = 2.7f };
+    struct Point p2 = { .x = 10.f, .y = 10.f };
 
     point_heap.size = 2;
-    ((Point *)point_heap.data)[0] = p1;
-    ((Point *)point_heap.data)[1] = p2;
+    ((struct Point *)point_heap.data)[0] = p1;
+    ((struct Point *)point_heap.data)[1] = p2;
 
     min_heap_api_remove(&point_heap, 1, NULL);
     // Check if other item is unchanged
-    TEST_ASSERT_EQUAL_MEMORY(&p1, &((Point *)point_heap.data)[0], point_heap.data_size);
+    TEST_ASSERT_EQUAL_MEMORY(&p1, &((struct Point *)point_heap.data)[0], point_heap.data_size);
 }
 void check_min_heap_api_remove_equal_data(void) {
-    Point root = { .x = 5.4f, .y = 2.7f };
-    Point r = { .x = 5.4f, .y = 2.7f };
-    Point l = { .x = 10.f, .y = 10.f };
+    struct Point root = { .x = 5.4f, .y = 2.7f };
+    struct Point r = { .x = 5.4f, .y = 2.7f };
+    struct Point l = { .x = 10.f, .y = 10.f };
 
     point_heap.size = 3;
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;
-    ((Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
 
     min_heap_api_remove(&point_heap, 0, NULL);
-    TEST_ASSERT_EQUAL_MEMORY(&r, &((Point *)point_heap.data)[0], point_heap.data_size);
+    TEST_ASSERT_EQUAL_MEMORY(&r, &((struct Point *)point_heap.data)[0], point_heap.data_size);
 }
 void check_min_heap_api_remove_up_heapify_data(void) {
-    // The swapped element is lower than the last item in the heap (
-    Point root = { .x = 1.f, .y = 1.f };
-    Point l = { .x = 10.f, .y = 10.f };
-    Point r = { .x = 1.4f, .y = 1.3f };
+    // The swapped element is lower than the last item in the heap
+    struct Point root = { .x = 1.f, .y = 1.f };
+    struct Point l = { .x = 10.f, .y = 10.f };
+    struct Point r = { .x = 1.4f, .y = 1.3f };
 
-    Point ll = { .x = 11.f, .y = 11.f };
-    Point lr = { .x = 12.f, .y = 12.f };
-    Point rl = { .x = 2.f, .y = 2.f };
-    Point rr = { .x = 3.14f, .y = 2.5f };
+    struct Point ll = { .x = 11.f, .y = 11.f };
+    struct Point lr = { .x = 12.f, .y = 12.f };
+    struct Point rl = { .x = 2.f, .y = 2.f };
+    struct Point rr = { .x = 3.14f, .y = 2.5f };
 
     point_heap.size = 7;
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;
-    ((Point *)point_heap.data)[2] = r;
-    ((Point *)point_heap.data)[3] = ll;
-    ((Point *)point_heap.data)[4] = lr;
-    ((Point *)point_heap.data)[5] = rl;
-    ((Point *)point_heap.data)[6] = rr;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[3] = ll;
+    ((struct Point *)point_heap.data)[4] = lr;
+    ((struct Point *)point_heap.data)[5] = rl;
+    ((struct Point *)point_heap.data)[6] = rr;
 
     // After the deletion of the 'll' node the 'l' and the 'rr' nodes should swap
-    Point expected[6] = { root, rr, r, l, lr, rl };
+    struct Point expected[6] = { root, rr, r, l, lr, rl };
 
     min_heap_api_remove(&point_heap, 3, NULL);
-    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 6);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(struct Point), 6);
 }
 void check_min_heap_api_remove_down_heapify_data(void) {
     // The swapped element is lower than the last item in the heap
-    Point root = { .x = 1.f, .y = 1.f };
-    Point l = { .x = 1.4f, .y = 1.3f };
-    Point r = { .x = 10.f, .y = 10.f };
+    struct Point root = { .x = 1.f, .y = 1.f };
+    struct Point l = { .x = 1.4f, .y = 1.3f };
+    struct Point r = { .x = 10.f, .y = 10.f };
 
-    Point ll = { .x = 2.f, .y = 2.f };
-    Point lr = { .x = 3.14f, .y = 2.5f };
-    Point rl = { .x = 11.f, .y = 11.f };
-    Point rr = { .x = 12.f, .y = 12.f };
+    struct Point ll = { .x = 2.f, .y = 2.f };
+    struct Point lr = { .x = 3.14f, .y = 2.5f };
+    struct Point rl = { .x = 11.f, .y = 11.f };
+    struct Point rr = { .x = 12.f, .y = 12.f };
 
     point_heap.size = 7;
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;
-    ((Point *)point_heap.data)[2] = r;
-    ((Point *)point_heap.data)[3] = ll;
-    ((Point *)point_heap.data)[4] = lr;
-    ((Point *)point_heap.data)[5] = rl;
-    ((Point *)point_heap.data)[6] = rr;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[3] = ll;
+    ((struct Point *)point_heap.data)[4] = lr;
+    ((struct Point *)point_heap.data)[5] = rl;
+    ((struct Point *)point_heap.data)[6] = rr;
 
     // After the deletion of the 'root' node the 'll' and the 'rr' nodes should swap
-    Point expected[6] = { l, ll, r, rr, lr, rl };
+    struct Point expected[6] = { l, ll, r, rr, lr, rl };
 
     min_heap_api_remove(&point_heap, 0, NULL);
     TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, point_heap.data_size, 6);
 }
 void check_min_heap_api_remove_not_heapify_data(void) {
-    Point root = { .x = 1.f, .y = 1.f };
-    Point l = { .x = 1.4f, .y = 1.3f };
-    Point r = { .x = 10.f, .y = 10.f };
+    struct Point root = { .x = 1.f, .y = 1.f };
+    struct Point l = { .x = 1.4f, .y = 1.3f };
+    struct Point r = { .x = 10.f, .y = 10.f };
 
-    Point ll = { .x = 2.f, .y = 2.f };
-    Point lr = { .x = 3.14f, .y = 2.5f };
-    Point rl = { .x = 11.f, .y = 11.f };
-    Point rr = { .x = 12.f, .y = 12.f };
+    struct Point ll = { .x = 2.f, .y = 2.f };
+    struct Point lr = { .x = 3.14f, .y = 2.5f };
+    struct Point rl = { .x = 11.f, .y = 11.f };
+    struct Point rr = { .x = 12.f, .y = 12.f };
 
-    Point lll = { .x = 6.f, .y = 6.f };
-    Point llr = { .x = 7.f, .y = 7.f };
+    struct Point lll = { .x = 6.f, .y = 6.f };
+    struct Point llr = { .x = 7.f, .y = 7.f };
 
     point_heap.size = 9;
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;
-    ((Point *)point_heap.data)[2] = r;
-    ((Point *)point_heap.data)[3] = ll;
-    ((Point *)point_heap.data)[4] = lr;
-    ((Point *)point_heap.data)[5] = rl;
-    ((Point *)point_heap.data)[6] = rr;
-    ((Point *)point_heap.data)[7] = lll;
-    ((Point *)point_heap.data)[8] = llr;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[3] = ll;
+    ((struct Point *)point_heap.data)[4] = lr;
+    ((struct Point *)point_heap.data)[5] = rl;
+    ((struct Point *)point_heap.data)[6] = rr;
+    ((struct Point *)point_heap.data)[7] = lll;
+    ((struct Point *)point_heap.data)[8] = llr;
 
     min_heap_api_remove(&point_heap, 3, NULL);
 
     // After the deletion of the 'root' node the new root is expected to be 'r'
-    Point expected[8] = { root, l, r, llr, lr, rl, rr, lll };
+    struct Point expected[8] = { root, l, r, llr, lr, rl, rr, lll };
 
     min_heap_api_remove(&point_heap, 3, NULL);
-    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 8);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(struct Point), 8);
 }
 void check_min_heap_api_remove_root_not_down_heapify_data(void) {
-    Point root = { .x = 7.f, .y = 7.f };
-    Point l = { .x = 8.f, .y = 8.f };
-    Point r = { .x = 7.f, .y = 7.f };
+    struct Point root = { .x = 7.f, .y = 7.f };
+    struct Point l = { .x = 8.f, .y = 8.f };
+    struct Point r = { .x = 7.f, .y = 7.f };
 
-    Point ll = { .x = 3.f, .y = 3.f };
-    Point lr = { .x = 4.f, .y = 4.f };
-    Point rl = { .x = 5.f, .y = 5.f };
-    Point rr = { .x = 6.f, .y = 6.f };
+    struct Point ll = { .x = 3.f, .y = 3.f };
+    struct Point lr = { .x = 4.f, .y = 4.f };
+    struct Point rl = { .x = 5.f, .y = 5.f };
+    struct Point rr = { .x = 6.f, .y = 6.f };
 
-    Point lll = { .x = 4.f, .y = 4.f };
-    Point llr = { .x = 4.f, .y = 4.f };
-    Point lrl = { .x = 5.f, .y = 5.f };
-    Point lrr = { .x = 5.f, .y = 5.f };
-    Point rll = { .x = 11.f, .y = 11.f };
-    Point rlr = { .x = 11.f, .y = 11.f };
-    Point rrl = { .x = 7.f, .y = 7.f };
-    Point rrr = { .x = 10.f, .y = 10.f };
+    struct Point lll = { .x = 4.f, .y = 4.f };
+    struct Point llr = { .x = 4.f, .y = 4.f };
+    struct Point lrl = { .x = 5.f, .y = 5.f };
+    struct Point lrr = { .x = 5.f, .y = 5.f };
+    struct Point rll = { .x = 11.f, .y = 11.f };
+    struct Point rlr = { .x = 11.f, .y = 11.f };
+    struct Point rrl = { .x = 7.f, .y = 7.f };
+    struct Point rrr = { .x = 10.f, .y = 10.f };
 
-    MinHeapHandler_t point_heap;
-    min_heap_api_init(&point_heap, sizeof(Point), 16, min_heap_compare_point, &arena);
+    struct MinHeapHandler point_heap;
+    min_heap_api_init(&point_heap, sizeof(struct Point), 16, min_heap_compare_point, &arena);
     point_heap.size = 15;
 
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;
-    ((Point *)point_heap.data)[2] = r;
-    ((Point *)point_heap.data)[3] = ll;
-    ((Point *)point_heap.data)[4] = lr;
-    ((Point *)point_heap.data)[5] = rl;
-    ((Point *)point_heap.data)[6] = rr;
-    ((Point *)point_heap.data)[7] = lll;
-    ((Point *)point_heap.data)[8] = llr;
-    ((Point *)point_heap.data)[9] = lrl;
-    ((Point *)point_heap.data)[10] = lrr;
-    ((Point *)point_heap.data)[11] = rll;
-    ((Point *)point_heap.data)[12] = rlr;
-    ((Point *)point_heap.data)[13] = rrl;
-    ((Point *)point_heap.data)[14] = rrr;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[3] = ll;
+    ((struct Point *)point_heap.data)[4] = lr;
+    ((struct Point *)point_heap.data)[5] = rl;
+    ((struct Point *)point_heap.data)[6] = rr;
+    ((struct Point *)point_heap.data)[7] = lll;
+    ((struct Point *)point_heap.data)[8] = llr;
+    ((struct Point *)point_heap.data)[9] = lrl;
+    ((struct Point *)point_heap.data)[10] = lrr;
+    ((struct Point *)point_heap.data)[11] = rll;
+    ((struct Point *)point_heap.data)[12] = rlr;
+    ((struct Point *)point_heap.data)[13] = rrl;
+    ((struct Point *)point_heap.data)[14] = rrr;
 
-    Point expected[14] = { r, l, rl, ll, lr, rrr, rr, lll, llr, lrl, lrr, rll, rlr, rrl };
+    struct Point expected[14] = { r, l, rl, ll, lr, rrr, rr, lll, llr, lrl, lrr, rll, rlr, rrl };
 
     min_heap_api_remove(&point_heap, 0, NULL);
 
-    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 14);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(struct Point), 14);
 }
-void check_min_heap_api_remove_root_up_heapify_data(void){
-    Point root = { .x = 2.f, .y = 2.f };
-    Point l = { .x = 5.f, .y = 5.f };  
-    Point r = { .x = 4.f, .y = 4.f };  
-    Point ll = { .x = 7.f, .y = 7.f }; 
-    Point lr = { .x = 3.f, .y = 3.f }; 
-    Point rl = { .x = 8.f, .y = 8.f };
-    Point rr = { .x = 1.f, .y = 1.f };
+void check_min_heap_api_remove_root_up_heapify_data(void) {
+    struct Point root = { .x = 2.f, .y = 2.f };
+    struct Point l = { .x = 5.f, .y = 5.f };
+    struct Point r = { .x = 4.f, .y = 4.f };
+    struct Point ll = { .x = 7.f, .y = 7.f };
+    struct Point lr = { .x = 3.f, .y = 3.f };
+    struct Point rl = { .x = 8.f, .y = 8.f };
+    struct Point rr = { .x = 1.f, .y = 1.f };
 
     point_heap.size = 7;
-    ((Point *)point_heap.data)[0] = root;
-    ((Point *)point_heap.data)[1] = l;   
-    ((Point *)point_heap.data)[2] = r;   
-    ((Point *)point_heap.data)[3] = ll;  
-    ((Point *)point_heap.data)[4] = lr;  
-    ((Point *)point_heap.data)[5] = rl;
-    ((Point *)point_heap.data)[6] = rr;
+    ((struct Point *)point_heap.data)[0] = root;
+    ((struct Point *)point_heap.data)[1] = l;
+    ((struct Point *)point_heap.data)[2] = r;
+    ((struct Point *)point_heap.data)[3] = ll;
+    ((struct Point *)point_heap.data)[4] = lr;
+    ((struct Point *)point_heap.data)[5] = rl;
+    ((struct Point *)point_heap.data)[6] = rr;
 
     min_heap_api_remove(&point_heap, 2, NULL);
-    Point expected[6] = { rr, l, root, ll, lr, rl };
+    struct Point expected[6] = { rr, l, root, ll, lr, rl };
 
-    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(Point), 6);
+    TEST_ASSERT_EQUAL_MEMORY_ARRAY(expected, point_heap.data, sizeof(struct Point), 6);
 }
 
 /*! @} */
