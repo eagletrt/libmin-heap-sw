@@ -38,11 +38,11 @@
  * \retval MIN_HEAP_RC_OK otherwise
  */
 enum MinHeapReturnCode min_heap_api_init(
-    struct MinHeapHandler *const heap,
-    const size_t data_size,
-    const size_t capacity,
+    struct MinHeapHandler *heap,
+    size_t data_size,
+    size_t capacity,
     int8_t (*compare)(void *, void *),
-    struct ArenaAllocatorHandler *const arena);
+    struct ArenaAllocatorHandler *arena);
 
 /*!
  * \brief Get the number of elements inside the heap
@@ -50,7 +50,7 @@ enum MinHeapReturnCode min_heap_api_init(
  * \param[in] heap The heap handler structure
  * \return The current size
  */
-size_t min_heap_api_size(const struct MinHeapHandler *const heap);
+size_t min_heap_api_size(const struct MinHeapHandler *heap);
 
 /*!
  * \brief Check if the heap is empty
@@ -59,7 +59,7 @@ size_t min_heap_api_size(const struct MinHeapHandler *const heap);
  * \param[in] heap The heap handler structure
  * \return \c true if the heap is empty, \c false otherwise
  */
-bool min_heap_api_is_empty(const struct MinHeapHandler *const heap);
+bool min_heap_api_is_empty(const struct MinHeapHandler *heap);
 
 /*!
  * \brief Check if the heap is full
@@ -68,7 +68,7 @@ bool min_heap_api_is_empty(const struct MinHeapHandler *const heap);
  * \param[in] heap The heap handler structure
  * \return \c true if the heap is full, \c false otherwise
  */
-bool min_heap_api_is_full(const struct MinHeapHandler *const heap);
+bool min_heap_api_is_full(const struct MinHeapHandler *heap);
 
 /*!
  * \brief Get a copy of the first element in the heap (the minimum)
@@ -81,7 +81,7 @@ bool min_heap_api_is_full(const struct MinHeapHandler *const heap);
  * \retval MIN_HEAP_RC_EMPTY if the heap is empty
  * \retval MIN_HEAP_RC_OK otherwise
  */
-enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *const heap, void *const out);
+enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *heap, void *out);
 
 /*!
  * \brief Get a reference to the first element in the heap (the minimum)
@@ -92,7 +92,7 @@ enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *const heap,
  * \param[in] heap The heap handler structure
  * \return A pointer to the minimum element
  */
-void *min_heap_api_peek(const struct MinHeapHandler *const heap);
+void *min_heap_api_peek(const struct MinHeapHandler *heap);
 
 /*!
  * \brief Clear the heap removing all elements
@@ -101,7 +101,7 @@ void *min_heap_api_peek(const struct MinHeapHandler *const heap);
  * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler is \c NULL
  * \retval MIN_HEAP_RC_OK otherwise
  */
-enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *const heap);
+enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *heap);
 
 /*!
  * \brief Insert an element in the heap
@@ -112,7 +112,7 @@ enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *const heap);
  * \retval MIN_HEAP_RC_FULL if the heap is full
  * \retval MIN_HEAP_RC_OK otherwise
  */
-enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, const void *const item);
+enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *heap, const void *item);
 
 /*!
  * \brief Remove an element from the heap
@@ -127,7 +127,7 @@ enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, co
  * \retval MIN_HEAP_RC_OUT_OF_BOUNDS if the index is greater than the size of the heap
  * \retval MIN_HEAP_RC_OK otherwise
  */
-enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, size_t index, void *const out);
+enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *heap, size_t index, void *out);
 
 /*!
  * \brief Find the index of an item in the heap array
@@ -137,6 +137,6 @@ enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, si
  * \param[in] item The item to find
  * \return The index in the heap of the item if found, -1 otherwise
  */
-int16_t min_heap_api_find(const struct MinHeapHandler *const heap, void *const item);
+int16_t min_heap_api_find(const struct MinHeapHandler *heap, void *item);
 
 #endif

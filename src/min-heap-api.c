@@ -43,11 +43,12 @@
  * \param a The address of the first element to be swapped
  * \param b The address of the second element to be swapped
  */
-EAGLETRT_STATIC_INLINE void min_heap_swap(const struct MinHeapHandler *heap, void *a, void *b) {
-    uint8_t aux[heap->data_size]; //local buffer as a swapping area
-    memcpy(aux, a, heap->data_size);
-    memcpy(a, b, heap->data_size);
-    memcpy(b, aux, heap->data_size);
+EAGLETRT_STATIC_INLINE void min_heap_swap(const struct MinHeapHandler *heap, void *first, void *second) {
+    // TODO: Allocate additional capacity during initialization instead of using VLA
+    uint8_t aux[heap->data_size];
+    memcpy(aux, first, heap->data_size);
+    memcpy(first, second, heap->data_size);
+    memcpy(second, aux, heap->data_size);
 }
 
 enum MinHeapReturnCode min_heap_api_init(
@@ -56,15 +57,17 @@ enum MinHeapReturnCode min_heap_api_init(
     const size_t capacity,
     int8_t (*compare)(void *, void *),
     struct ArenaAllocatorHandler *const arena) {
-    if (heap == NULL || compare == NULL || arena == NULL)
+    if (heap == NULL || compare == NULL || arena == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
+    }
     heap->data_size = data_size;
     heap->size = 0;
     heap->capacity = capacity;
     heap->compare = compare;
     heap->data = arena_allocator_api_calloc(arena, data_size, capacity);
-    if (heap->data == NULL)
+    if (heap->data == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
+    }
     return MIN_HEAP_RC_OK;
 }
 
@@ -81,45 +84,51 @@ bool min_heap_api_is_full(const struct MinHeapHandler *const heap) {
 }
 
 enum MinHeapReturnCode min_heap_api_top(const struct MinHeapHandler *const heap, void *const out) {
-    if (heap == NULL || out == NULL || heap->data == NULL)
+    if (heap == NULL || out == NULL || heap->data == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
-    if (heap->size == 0)
+    }
+    if (heap->size == 0) {
         return MIN_HEAP_RC_EMPTY;
+    }
     memcpy(out, heap->data, heap->data_size);
     return MIN_HEAP_RC_OK;
 }
 
 void *min_heap_api_peek(const struct MinHeapHandler *const heap) {
-    if (heap == NULL || heap->size == 0)
+    if (heap == NULL || heap->size == 0) {
         return NULL;
+    }
     return heap->data;
 }
 
 enum MinHeapReturnCode min_heap_api_clear(struct MinHeapHandler *const heap) {
-    if (heap == NULL)
+    if (heap == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
+    }
     heap->size = 0;
     return MIN_HEAP_RC_OK;
 }
 
 enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, const void *const item) {
-    if (heap == NULL || item == NULL || heap->compare == NULL || heap->data == NULL)
+    if (heap == NULL || item == NULL || heap->compare == NULL || heap->data == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
-    if (heap->size == heap->capacity)
+    }
+    if (heap->size == heap->capacity) {
         return MIN_HEAP_RC_FULL;
+    }
 
     // Insert item at the end of the heap
     const size_t data_size = heap->data_size;
     size_t cur = heap->size;
     uint8_t *base = (uint8_t *)heap->data;
-    memcpy(base + cur * data_size, item, data_size);
+    memcpy(base + (cur * data_size), item, data_size);
     ++heap->size;
 
     // Restore heap properties
     size_t parent = MIN_HEAP_PARENT(cur);
-    while (cur != 0 && heap->compare(base + cur * data_size, base + parent * data_size) < 0) {
+    while (cur != 0 && heap->compare(base + (cur * data_size), base + (parent * data_size)) < 0) {
         // Swap items
-        min_heap_swap(heap, base + cur * data_size, base + parent * data_size);
+        min_heap_swap(heap, base + (cur * data_size), base + (parent * data_size));
 
         // Update indices
         cur = parent;
@@ -129,37 +138,44 @@ enum MinHeapReturnCode min_heap_api_insert(struct MinHeapHandler *const heap, co
 }
 
 enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, size_t index, void *const out) {
-    if (heap == NULL || heap->compare == NULL)
+    if (heap == NULL || heap->compare == NULL) {
         return MIN_HEAP_RC_NULL_POINTER;
-    if (heap->size == 0)
+    }
+    if (heap->size == 0) {
         return MIN_HEAP_RC_EMPTY;
-    if (index >= heap->size)
+    }
+    if (index >= heap->size) {
         return MIN_HEAP_RC_OUT_OF_BOUNDS;
+    }
 
     // Swap the error with the last one in the heap (if not the same)
     uint8_t *base = (uint8_t *)heap->data;
     const size_t data_size = heap->data_size;
-    if (heap->size > 1)
-        min_heap_swap(heap, base + index * data_size, base + (heap->size - 1) * data_size);
+    if (heap->size > 1) {
+        min_heap_swap(heap, base + (index * data_size), base + ((heap->size - 1) * data_size));
+    }
 
     // Remove last element
     --heap->size;
 
     // Copy element
-    if (out != NULL)
-        memcpy(out, base + heap->size * data_size, data_size);
+    if (out != NULL) {
+        memcpy(out, base + (heap->size * data_size), data_size);
+    }
 
-    if (index == heap->size)
+    if (index == heap->size) {
         return MIN_HEAP_RC_OK;
+    }
 
+    // TODO: Move Up-heapify and Down-heapify to separate functions to reduce cognitive complexity
     // Restore heap properties
-    int8_t cmp = heap->compare(base + index * data_size, base + heap->size * data_size);
+    int8_t cmp = heap->compare(base + (index * data_size), base + (heap->size * data_size));
     // Up-heapify
     if (cmp < 0) {
         size_t parent = MIN_HEAP_PARENT(index);
-        while (index != 0 && heap->compare(base + index * data_size, base + parent * data_size) < 0) {
+        while (index != 0 && heap->compare(base + (index * data_size), base + (parent * data_size)) < 0) {
             // Swap items
-            min_heap_swap(heap, base + index * data_size, base + parent * data_size);
+            min_heap_swap(heap, base + (index * data_size), base + (parent * data_size));
 
             // Update indices
             index = parent;
@@ -169,43 +185,46 @@ enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, si
     // Down-heapify
     else if (cmp > 0) {
         // Restore heap properties
-        size_t l = MIN_HEAP_CHILD_L(index);
-        size_t r = MIN_HEAP_CHILD_R(index);
-        size_t child = (r >= heap->size)
-                           ? l
-                           : (heap->compare(base + l * data_size, base + r * data_size) < 0
-                                  ? l
-                                  : r);
+        size_t left = MIN_HEAP_CHILD_L(index);
+        size_t right = MIN_HEAP_CHILD_R(index);
+        size_t child = (right >= heap->size)
+                           ? left
+                           : (heap->compare(base + (left * data_size), base + (right * data_size)) < 0
+                                  ? left
+                                  : right);
 
         // Until a leaf is reached (or the parent has only the left child)
-        while (r < heap->size && heap->compare(base + child * data_size, base + index * data_size) < 0) {
-            min_heap_swap(heap, base + index * data_size, base + child * data_size);
+        while (right < heap->size && heap->compare(base + (child * data_size), base + (index * data_size)) < 0) {
+            min_heap_swap(heap, base + (index * data_size), base + (child * data_size));
 
             // Update indices
             index = child;
-            l = MIN_HEAP_CHILD_L(index);
-            r = MIN_HEAP_CHILD_R(index);
-            child = (r >= heap->size)
-                        ? l
-                        : (heap->compare(base + l * data_size, base + r * data_size) < 0
-                               ? l
-                               : r);
+            left = MIN_HEAP_CHILD_L(index);
+            right = MIN_HEAP_CHILD_R(index);
+            child = (right >= heap->size)
+                        ? left
+                        : (heap->compare(base + (left * data_size), base + (right * data_size)) < 0
+                               ? left
+                               : right);
         }
 
         // Check left child
-        if (l < heap->size && heap->compare(base + l * data_size, base + index * data_size) < 0)
-            min_heap_swap(heap, base + index * data_size, base + child * data_size);
+        if (left < heap->size && heap->compare(base + (left * data_size), base + (index * data_size)) < 0) {
+            min_heap_swap(heap, base + (index * data_size), base + (child * data_size));
+        }
     }
     return MIN_HEAP_RC_OK;
 }
 
 int16_t min_heap_api_find(const struct MinHeapHandler *const heap, void *const item) {
-    if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL)
+    if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL) {
         return -1;
+    }
 
     for (size_t i = 0; i < heap->size; ++i) {
-        if (heap->compare(item, (uint8_t *)heap->data + heap->data_size * i) == 0)
+        if (heap->compare(item, (uint8_t *)heap->data + (heap->data_size * i)) == 0) {
             return i;
+        }
     }
 
     return -1;
