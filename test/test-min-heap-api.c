@@ -6,15 +6,15 @@
  *
  * \brief Library that implements a minimum heap with a static array without
  *      dinamic memory allocation
- * 
- * \details A min heap is a binary heap where the smallest element is 
- *      always at the root. It maintains the heap property, meaning each 
- *      parent node has a value less than or equal to its children. 
- *      It is also a complete binary tree, meaning all levels are fully 
- *      filled except possibly the last, which is filled from left to right. 
- *      The main operations include insertion, deletion and top value. 
- * 
- * \warning The data buffer will not be deallocated automatically but has to be freed 
+ *
+ * \details A min heap is a binary heap where the smallest element is
+ *      always at the root. It maintains the heap property, meaning each
+ *      parent node has a value less than or equal to its children.
+ *      It is also a complete binary tree, meaning all levels are fully
+ *      filled except possibly the last, which is filled from left to right.
+ *      The main operations include insertion, deletion and top value.
+ *
+ * \warning The data buffer will not be deallocated automatically but has to be freed
  *      by using the arena allocator.
  */
 

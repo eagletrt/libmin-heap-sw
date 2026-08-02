@@ -6,15 +6,15 @@
  *
  * \brief Library that implements a minimum heap with an arena allocator to
  *      dynamically allocate the buffer
- * 
- * \details A min heap is a binary heap where the smallest element is 
- *      always at the root. It maintains the heap property, meaning each 
- *      parent node has a value less than or equal to its children. 
- *      It is also a complete binary tree, meaning all levels are fully 
- *      filled except possibly the last, which is filled from left to right. 
- *      The main operations include insertion, deletion and top value. 
- * 
- * \warning The data buffer will not be deallocated automatically but has to be freed 
+ *
+ * \details A min heap is a binary heap where the smallest element is
+ *      always at the root. It maintains the heap property, meaning each
+ *      parent node has a value less than or equal to its children.
+ *      It is also a complete binary tree, meaning all levels are fully
+ *      filled except possibly the last, which is filled from left to right.
+ *      The main operations include insertion, deletion and top value.
+ *
+ * \warning The data buffer will not be deallocated automatically but has to be freed
  *      by using the arena allocator.
  */
 
@@ -23,6 +23,8 @@
 
 #include "min-heap.h"
 #include "arena-allocator-api.h"
+
+#include <stdint.h>
 
 /*!
  * \brief Initialize the minimum heap structure
@@ -46,7 +48,7 @@ enum MinHeapReturnCode min_heap_api_init(
  * \brief Get the number of elements inside the heap
  *
  * \param[in] heap The heap handler structure
- * \return size_t The current size
+ * \return The current size
  */
 size_t min_heap_api_size(const struct MinHeapHandler *const heap);
 
@@ -72,7 +74,7 @@ bool min_heap_api_is_full(const struct MinHeapHandler *const heap);
  * \brief Get a copy of the first element in the heap (the minimum)
  * \attention The out variable has to be an address of a variable compatible
  * with the items in the heap (e.g. int if the heap contains integers)
- * 
+ *
  * \param[in] heap The heap handler structure
  * \param[out] out The address of the variable where the copy is stored
  * \retval MIN_HEAP_RC_NULL_POINTER if the heap handler or \c out are \c NULL
@@ -133,8 +135,8 @@ enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, si
  *
  * \param[in] heap The heap handler structure
  * \param[in] item The item to find
- * \return long The index in the heap of the item if found, -1 otherwise
+ * \return The index in the heap of the item if found, -1 otherwise
  */
-long min_heap_api_find(const struct MinHeapHandler *const heap, void *const item);
+int16_t min_heap_api_find(const struct MinHeapHandler *const heap, void *const item);
 
 #endif

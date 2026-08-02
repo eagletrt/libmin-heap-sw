@@ -6,21 +6,22 @@
  *
  * \brief Library that implements a minimum heap with an arena allocator to
  *      dynamically allocate the buffer
- * 
- * \details A min heap is a binary heap where the smallest element is 
- *      always at the root. It maintains the heap property, meaning each 
- *      parent node has a value less than or equal to its children. 
- *      It is also a complete binary tree, meaning all levels are fully 
- *      filled except possibly the last, which is filled from left to right. 
- *      The main operations include insertion, deletion and top value. 
- * 
- * \warning The data buffer will not be deallocated automatically but has to be freed 
+ *
+ * \details A min heap is a binary heap where the smallest element is
+ *      always at the root. It maintains the heap property, meaning each
+ *      parent node has a value less than or equal to its children.
+ *      It is also a complete binary tree, meaning all levels are fully
+ *      filled except possibly the last, which is filled from left to right.
+ *      The main operations include insertion, deletion and top value.
+ *
+ * \warning The data buffer will not be deallocated automatically but has to be freed
  *      by using the arena allocator.
  */
 
 #include "eagletrt-api.h"
 #include "min-heap-api.h"
 
+#include <stdint.h>
 #include <string.h>
 
 /*!
@@ -35,9 +36,9 @@
 
 /**
  * \brief Helper function to swap two elements that are located in the heap
- * 
+ *
  * \details The function will swap the element *a* with the element *b*
- * 
+ *
  * \param heap The min heap structure handler
  * \param a The address of the first element to be swapped
  * \param b The address of the second element to be swapped
@@ -198,7 +199,7 @@ enum MinHeapReturnCode min_heap_api_remove(struct MinHeapHandler *const heap, si
     return MIN_HEAP_RC_OK;
 }
 
-long min_heap_api_find(const struct MinHeapHandler *const heap, void *const item) {
+int16_t min_heap_api_find(const struct MinHeapHandler *const heap, void *const item) {
     if (heap == NULL || item == NULL || heap->compare == NULL || heap->size == 0 || heap->data == NULL)
         return -1;
 
