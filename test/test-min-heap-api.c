@@ -20,6 +20,9 @@
 
 #include "unity.h"
 #include "min-heap-api.h"
+#include <stdint.h>
+
+void prv_min_heap_api_swap(const struct MinHeapHandler *heap, void *first, void *second);
 
 /*!
  * \brief A 2D representation of a point in Cartesian space
@@ -36,15 +39,17 @@ struct ArenaAllocatorHandler arena;
 int8_t min_heap_compare_float(void *f, void *s) {
     float a = *(float *)f;
     float b = *(float *)s;
-    if (a < b)
+    if (a < b) {
         return -1;
+    }
     return a == b ? 0 : 1;
 }
 int8_t min_heap_compare_int(void *f, void *s) {
     int a = *(int *)f;
     int b = *(int *)s;
-    if (a < b)
+    if (a < b) {
         return -1;
+    }
     return a == b ? 0 : 1;
 }
 int8_t min_heap_compare_point(void *f, void *s) {
@@ -52,8 +57,9 @@ int8_t min_heap_compare_point(void *f, void *s) {
     struct Point *b = (struct Point *)s;
     size_t dist_a = a->x * a->x + a->y * a->y;
     size_t dist_b = b->x * b->x + b->y * b->y;
-    if (dist_a < dist_b)
+    if (dist_a < dist_b) {
         return -1;
+    }
     return dist_a == dist_b ? 0 : 1;
 }
 
@@ -68,6 +74,30 @@ void tearDown(void) {
     min_heap_api_clear(&point_heap);
     arena_allocator_api_free(&arena);
 }
+
+/*!
+ * \defgroup min_heap_api_swap Test mean heap swap function
+ * @{
+ */
+
+void check_min_heap_api_swap_correctness(void) {
+    const size_t capacity = int_heap.capacity;
+    const int expected_first = 56;
+    const int expected_second = 93;
+    int *first = &((int *)int_heap.data)[0];
+    int *second = &((int *)int_heap.data)[1];
+    int *swap = &((int *)int_heap.data)[int_heap.capacity]; // Reserved swap memory area
+    *first = expected_second;
+    *second = expected_first;
+
+    prv_min_heap_api_swap(&int_heap, (void *)first, (void *)second);
+
+    TEST_ASSERT_EQUAL_INT_MESSAGE(expected_first, *first, "Second value was not swapped correctly");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(expected_second, *second, "First value was not swapped correctly");
+    TEST_ASSERT_EQUAL_INT_MESSAGE(expected_second, *swap, "Swap memory area contains wrong value");
+}
+
+/*! @} */
 
 /*!
  * \defgroup min_heap_api_init Test heap min initialization
@@ -581,6 +611,15 @@ void check_min_heap_api_find_when_null_data(void) {
 
 int main() {
     UNITY_BEGIN();
+
+    /*!
+     * \addtogroup min_heap_api_swap Run test for mean heap swap function
+     * @{
+     */
+
+    RUN_TEST(check_min_heap_api_swap_correctness);
+
+    /*! @} */
 
     /*!
      * \addtogroup min_heap_api_init Run test for mean heap initialization
